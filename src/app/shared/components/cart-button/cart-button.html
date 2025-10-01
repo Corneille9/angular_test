@@ -1,0 +1,6 @@
+<div>
+  <button z-button zType="default" zSize="sm" class="cursor-pointer" (click)="openDialog()">
+    <i class="icon-shopping-cart mr-1"></i>
+    Cart @if (cartLength() > 0) {({{ cartLength() }})}
+  </button>
+</div>

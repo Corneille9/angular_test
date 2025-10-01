@@ -1,0 +1,51 @@
+<div class="flex items-center justify-center h-screen">
+  <div>
+    <div class="text-center mb-3">
+      <a routerLink="/" class="text-xl font-bold">
+        MyShop
+      </a>
+    </div>
+
+    <z-card class="w-full max-w-sm" zTitle="Login to your account" zDescription="Enter your username below to login to your account">
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <fieldset [disabled]="isLoading()">
+            <form class="flex flex-col gap-4" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+              <z-form-field>
+                <label z-form-label zRequired>Username</label>
+                <z-form-control>
+                  <input z-input type="text" id="username" name="username" formControlName="username" required placeholder="Enter your username">
+                </z-form-control>
+                @if (loginForm.get('username')?.touched && loginForm.get('username')?.invalid) {
+                  <z-form-message zType="error">
+                    Username is required
+                  </z-form-message>
+                }
+              </z-form-field>
+              <z-form-field>
+                <label z-form-label zRequired for="password">Password</label>
+                <z-form-control>
+                  <input z-input type="text" id="password" formControlName="password" required name="password" placeholder="Enter your last title">
+                </z-form-control>
+                @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
+                  <z-form-message zType="error">
+                    Password is required
+                  </z-form-message>
+                }
+              </z-form-field>
+
+              @if (errorMessage()) {
+                <div class="text-red-500 text-sm py-2 transition-all duration-500 ease-in-out text-center">
+                  {{ errorMessage() }}
+                </div>
+              }
+
+              <button z-button zType="default" type="submit" [disabled]="isLoading()" class="cursor-pointer">Login</button>
+            </form>
+          </fieldset>
+
+        </div>
+      </div>
+    </z-card>
+  </div>
+</div>

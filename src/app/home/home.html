@@ -1,0 +1,19 @@
+<app-layout>
+  <div layoutMain class="p-6">
+    <h1 class="text-2xl font-bold mb-6">Featured Products</h1>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-64">
+        <z-loader/>
+      </div>
+    } @else if (products.length === 0) {
+      <p>No products available</p>
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (product of products; track product.title) {
+          <app-product-card [product]="product" (onAddToCart)="handleAddToCart($event)"/>
+        }
+      </div>
+    }
+  </div>
+</app-layout>

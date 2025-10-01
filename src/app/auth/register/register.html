@@ -1,0 +1,61 @@
+<div class="flex items-center justify-center h-screen">
+  <div>
+    <div class="text-center mb-3">
+      <a routerLink="/" class="text-xl font-bold">
+        MyShop
+      </a>
+    </div>
+
+    <z-card class="w-full max-w-sm" zTitle="Register to your account" zDescription="Create an account to start shopping">
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <fieldset [disabled]="isLoading()">
+            <form class="flex flex-col gap-4" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+              <z-form-field>
+                <label z-form-label zRequired>Username</label>
+                <z-form-control>
+                  <input z-input type="text" id="username" name="username" formControlName="username" required placeholder="Enter your username">
+                </z-form-control>
+                @if (registerForm.get('username')?.touched && registerForm.get('username')?.invalid) {
+                  <z-form-message zType="error">
+                    Username is required
+                  </z-form-message>
+                }
+              </z-form-field>
+              <z-form-field>
+                <label z-form-label zRequired>Email</label>
+                <z-form-control>
+                  <input z-input type="text" id="email" name="email" formControlName="email" required placeholder="Enter your email">
+                </z-form-control>
+                @if (registerForm.get('email')?.touched && registerForm.get('email')?.invalid) {
+                  <z-form-message zType="error">
+                    Email is required
+                  </z-form-message>
+                }
+              </z-form-field>
+              <z-form-field>
+                <label z-form-label zRequired for="password">Password</label>
+                <z-form-control>
+                  <input z-input type="text" id="password" formControlName="password" required name="password" placeholder="Enter your last title">
+                </z-form-control>
+                @if (registerForm.get('password')?.touched && registerForm.get('password')?.invalid) {
+                  <z-form-message zType="error">
+                    Password is required
+                  </z-form-message>
+                }
+              </z-form-field>
+
+              @if (errorMessage()) {
+                <div class="text-red-500 text-sm py-2 transition-all duration-500 ease-in-out text-center">
+                  {{ errorMessage() }}
+                </div>
+              }
+
+              <button z-button zType="default" type="submit" [disabled]="isLoading()" class="cursor-pointer">Login</button>
+            </form>
+          </fieldset>
+        </div>
+      </div>
+    </z-card>
+  </div>
+</div>
