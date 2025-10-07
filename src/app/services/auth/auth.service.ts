@@ -1,6 +1,7 @@
-import {computed, inject, Injectable, signal} from '@angular/core';
+import {computed, Inject, inject, Injectable, PLATFORM_ID, signal} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
+import {isPlatformBrowser} from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class AuthService {
   user = signal<User | null>(null);
   isAuthenticated = computed(() => this.user() !== null);
 
-  constructor() {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.init();
   }
 
@@ -78,7 +79,7 @@ export class AuthService {
 
   getToken() {
     try {
-      if (!document) return null;
+      if (!isPlatformBrowser(this.platformId)) return null;
 
       return document.cookie
         .split('; ')
