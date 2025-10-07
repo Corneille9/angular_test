@@ -1,1 +1,151 @@
-<p>orders works!</p>
+<app-layout>
+  <div layoutMain class="p-6">
+    <h1 class="text-3xl font-bold mb-6">Orders Management</h1>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-64">
+        <z-loader/>
+      </div>
+    } @else {
+      <z-card class="overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Order ID
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                User ID
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Products
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Total
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              @for (order of orders(); track order.id) {
+                <tr class="hover:bg-gray-50 transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    #{{ order.id }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    User {{ order.userId }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+<!--                    {{ order.date | date:'short' }}-->
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ order.products.length }} items
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                    ${{ order.total.toFixed(2) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <select
+                      z-select
+                      [value]="order.status"
+                      (change)="updateStatus(order, $any($event.target).value)"
+                      [class]="'px-3 py-1 text-xs font-semibold rounded-full ' + getStatusColor(order.status)">
+                      @for (status of statusOptions; track status) {
+                        <option [value]="status">{{ status }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <button
+                      z-button
+                      zType="default"
+                      zSize="sm"
+                      (click)="viewOrderDetails(order)">
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                    No orders found
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </z-card>
+    }
+
+    <!-- Order Details Modal -->
+    @if (selectedOrder()) {
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeDetails()">
+        <z-card class="max-w-2xl w-full m-4 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h2 class="text-2xl font-bold">Order #{{ selectedOrder()!.id }}</h2>
+<!--                <p class="text-gray-500 mt-1">Placed on {{ selectedOrder()!.date | date:'medium' }}</p>-->
+              </div>
+              <button
+                z-button
+                zType="ghost"
+                zSize="sm"
+                (click)="closeDetails()"
+                class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <h3 class="font-semibold mb-2">Customer Information</h3>
+                <p class="text-sm text-gray-600">User ID: {{ selectedOrder()!.userId }}</p>
+              </div>
+
+              <div>
+                <h3 class="font-semibold mb-2">Order Status</h3>
+                <span [class]="'inline-block px-3 py-1 text-sm font-semibold rounded-full ' + getStatusColor(selectedOrder()!.status)">
+                  {{ selectedOrder()!.status }}
+                </span>
+              </div>
+
+              <div>
+                <h3 class="font-semibold mb-2">Products ({{ selectedOrder()!.products.length }} items)</h3>
+                <div class="space-y-2">
+                  @for (item of selectedOrder()!.products; track item.productId) {
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                      <div>
+                        <p class="font-medium">Product ID: {{ item.productId }}</p>
+                        <p class="text-sm text-gray-500">Quantity: {{ item.quantity }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="border-t pt-4">
+                <div class="flex justify-between items-center text-lg font-bold">
+                  <span>Total:</span>
+                  <span>${{ selectedOrder()!.total.toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </z-card>
+      </div>
+    }
+  </div>
+</app-layout>
