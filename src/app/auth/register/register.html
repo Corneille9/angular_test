@@ -12,13 +12,13 @@
           <fieldset [disabled]="isLoading()">
             <form class="flex flex-col gap-4" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
               <z-form-field>
-                <label z-form-label zRequired>Username</label>
+                <label z-form-label zRequired>Name</label>
                 <z-form-control>
-                  <input z-input type="text" id="username" name="username" formControlName="username" required placeholder="Enter your username">
+                  <input z-input type="text" id="name" name="name" formControlName="name" required placeholder="Enter your name">
                 </z-form-control>
-                @if (registerForm.get('username')?.touched && registerForm.get('username')?.invalid) {
+                @if (registerForm.get('name')?.touched && registerForm.get('name')?.invalid) {
                   <z-form-message zType="error">
-                    Username is required
+                    Name is required
                   </z-form-message>
                 }
               </z-form-field>

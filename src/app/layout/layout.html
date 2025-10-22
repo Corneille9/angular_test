@@ -85,6 +85,14 @@
             class="border rounded-md px-3 py-1 text-sm"
           />
 
+          <z-button (click)="toggleTheme()" zType="outline" class="cursor-pointer size-8" size="icon" [attr.aria-label]="getCurrentTheme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+            @if (getCurrentTheme() === 'dark') {
+              ☀️
+            } @else {
+              🌙
+            }
+          </z-button>
+
           @if (isAuthenticated()) {
             <!--            <button z-button zType="ghost" (click)="log('Account')">-->
               <!--              <i class="icon-user mr-1"></i>-->

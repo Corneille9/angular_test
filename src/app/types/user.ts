@@ -1,6 +1,11 @@
-interface User {
+export interface User {
   id: number;
-  username: string;
+  name: string;
   email: string;
-  password: string;
+  password?: string | null;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
 }

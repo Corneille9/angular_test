@@ -1,8 +1,9 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {Product} from '../../types/product';
+import {Product, ProductPaginatedResponse} from '../../types/product';
 import {CartService} from '../cart/cart.service';
+import {API_BASE_URL} from '../../config/api';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +12,9 @@ export class ProductService {
   private http = inject(HttpClient);
   private cartService = inject(CartService);
 
-  getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>('https://fakestoreapi.com/products');
+  getProducts(request: Record<string, any> = {}): Observable<ProductPaginatedResponse> {
+    const params = new URLSearchParams(request as any).toString();
+    return this.http.get<ProductPaginatedResponse>(`${API_BASE_URL}/products?${params}`);
   }
 
   addToCart(product: Product) {

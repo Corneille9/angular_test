@@ -19,7 +19,7 @@ export class ProductCard {
   isCartLoading = inject(CartService).isLoading;
 
   addToCart() {
-    console.log(`${this.product.title} added to cart`);
+    console.log(`${this.product.name} added to cart`);
     this.onAddToCart.emit(this.product);
   }
 }

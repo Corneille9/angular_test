@@ -1,9 +1,9 @@
-import {computed, Inject, inject, Injectable, PLATFORM_ID, signal} from '@angular/core';
+import {computed, inject, Injectable, signal} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Cart, CartItem} from '../../types/cart';
+import {Cart} from '../../types/cart';
 import {Product} from '../../types/product';
-import {isPlatformBrowser} from '@angular/common';
 import {AuthService} from '../auth/auth.service';
+import {API_BASE_URL} from '../../config/api';
 
 @Injectable({
   providedIn: 'root'
@@ -11,124 +11,59 @@ import {AuthService} from '../auth/auth.service';
 export class CartService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private base: string = "https://fakestoreapi.com";
   isLoading = signal(false);
 
   cart = signal<Cart | null>(null);
   cartItems = computed(() => this.cart()?.items ?? []);
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  ngOnInit() {
     this.loadCart();
   }
 
-  get(id: string) {
-    return this.http.get<Cart>(`${this.base}/carts/${id}`);
-  }
-
-  all() {
-    return this.http.get<Cart[]>(`${this.base}/carts`);
-  }
-
-  create() {
-    return this.http.post<Cart>(`${this.base}/carts`, {
-      userId: this.authService.user()?.id,
-      items: []
-    });
-  }
-
   async addProduct(product: Product) {
-    try {
-      this.isLoading.set(true);
+    this.isLoading.set(true);
 
-      if (!this.cart()) {
-        await this.loadCart(true);
+    this.http.post<Cart>(`${API_BASE_URL}/carts`, {
+      product_id: product.id,
+      quantity: 1
+    }).subscribe({
+      next: (cart) => {
+        this.cart.set(cart);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error(error);
+        this.isLoading.set(false);
       }
-      if (!this.cart()) {
-        throw new Error('Cart not found');
-      }
-
-      const cart = this.cart()!;
-
-      const item = cart.items?.find((i) => i.product.id === product.id);
-
-      const items = [
-        ...cart.items.filter((i) => i.product.id !== product.id),
-        {
-          quantity: item ? item.quantity + 1 : 1,
-          product
-        }
-      ];
-
-      this.cart.set({
-        ...cart,
-        items
-      });
-
-      this.saveCart(this.cart()!);
-
-      return this.http.put<Cart>(`${this.base}/carts/${this.cart()!.id}`, {
-        userId: this.cart()!.userId,
-        products: items.map((i) => ({
-          productId: i.product.id,
-          quantity: i.quantity
-        }))
-      });
-    } catch (error) {
-      console.error(error);
-      throw error;
-    } finally {
-      this.isLoading.set(false);
-    }
+    });
   }
 
-  removeProduct(item: CartItem) {
-    let cart = this.cart()!;
-    const items = cart.items?.filter((i) => i.product.id !== item.product.id);
-    this.cart.set({
-      ...cart,
-      items
+  removeProduct(product: Product) {
+    if (!this.cart()) return;
+
+    this.http.delete<{ data: Cart }>(`${API_BASE_URL}/carts/${this.cart()?.id}?product_id=${product.id}`,).subscribe({
+      next: (response) => {
+        this.cart.set(response.data);
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
+  }
+
+  loadCart() {
+    this.isLoading.set(true);
+
+    this.http.get<Cart>(`${API_BASE_URL}/carts`).subscribe({
+      next: (cart) => {
+        this.cart.set(cart);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error(error);
+        this.isLoading.set(false);
+      }
     });
 
-    this.saveCart(this.cart()!);
-  }
-
-  delete(id: string) {
-    return this.http.delete(`${this.base}/carts/${id}`);
-  }
-
-  saveCart(cart: Cart) {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }
-
-  async loadCart(create = false) {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    const data = localStorage.getItem('cart');
-    if (data) {
-      const cart: Cart = JSON.parse(data);
-      this.cart.set(cart);
-      return cart;
-    }
-
-    if (!create) return null;
-
-    return new Promise<Cart>((resolve, reject) => {
-      this.create().subscribe({
-        next: (cart) => {
-          this.saveCart({
-            id: cart.id,
-            userId: cart.userId,
-            items: []
-          });
-          this.cart.set({
-            id: cart.id,
-            userId: cart.userId,
-            items: []
-          });
-          resolve(this.cart()!);
-        },
-        error: (error) => reject(error)
-      });
-    });
   }
 }

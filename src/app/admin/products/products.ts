@@ -59,7 +59,7 @@ export class Products implements OnInit {
   }
 
   deleteProduct(product: Product) {
-    if (confirm(`Are you sure you want to delete "${product.title}"?`)) {
+    if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
       this.adminService.deleteProduct(product.id).subscribe({
         next: () => {
           this.products.set(this.products().filter(p => p.id !== product.id));

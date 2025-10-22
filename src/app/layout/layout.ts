@@ -5,6 +5,7 @@ import {ZardDividerComponent} from '@shared/components/divider/divider.component
 import {RouterLink} from '@angular/router';
 import {AuthService} from '../services/auth/auth.service';
 import {CartButton} from '@shared/components/cart-button/cart-button';
+import {DarkModeService} from '../services/darkmode/darkmode.service';
 
 
 @Component({
@@ -15,9 +16,19 @@ import {CartButton} from '@shared/components/cart-button/cart-button';
 })
 export class Layout {
   private authService = inject(AuthService);
+  private readonly darkmodeService = inject(DarkModeService);
   isAuthenticated = this.authService.isAuthenticated;
 
   constructor() {
+  }
+
+
+  toggleTheme(): void {
+    this.darkmodeService.toggleTheme();
+  }
+
+  getCurrentTheme(): 'light' | 'dark' {
+    return this.darkmodeService.getCurrentTheme();
   }
 
   logout() {

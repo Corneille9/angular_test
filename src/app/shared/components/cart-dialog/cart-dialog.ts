@@ -19,6 +19,6 @@ export class CartDialog {
   total = computed(() => this.cartItems().reduce((total, item) => total + item.product.price * item.quantity, 0));
 
   removeItem(item: CartItem) {
-    this.cartService.removeProduct(item);
+    this.cartService.removeProduct(item.product);
   }
 }

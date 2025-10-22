@@ -26,8 +26,8 @@ export class Login {
 
   constructor() {
     this.loginForm = new FormGroup({
-      username: new FormControl('mor_2314', [Validators.required, Validators.min(3)]),
-      password: new FormControl('83r5^_', [Validators.required]),
+      email: new FormControl('ange@gmail.com', [Validators.required, Validators.min(3)]),
+      password: new FormControl('ange@gmail.com', [Validators.required]),
     });
   }
 
@@ -43,7 +43,7 @@ export class Login {
       console.log("Login in...")
       this.isLoading.set(true);
       const success = await this.authService.login({
-        username: this.loginForm.value.username,
+        email: this.loginForm.value.email,
         password: this.loginForm.value.password
       });
 

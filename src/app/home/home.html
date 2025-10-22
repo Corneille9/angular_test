@@ -6,14 +6,56 @@
       <div class="flex justify-center items-center h-64">
         <z-loader/>
       </div>
-    } @else if (products.length === 0) {
+    } @else if (isEmpty()) {
       <p>No products available</p>
     } @else {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (product of products; track product.title) {
+        @for (product of products(); track product.name) {
           <app-product-card [product]="product" (onAddToCart)="handleAddToCart($event)"/>
         }
       </div>
     }
+
+    <div class="flex justify-center mt-6">
+      <z-pagination-content ariaLabel="Page navigation">
+        <z-pagination-item>
+          <z-pagination-previous class="cursor-pointer" (click)="goToPrevious()"/>
+        </z-pagination-item>
+
+        @for (page of pages(); track page) {
+          @if (page === 1) {
+            <z-pagination-item>
+              <z-pagination-button class="cursor-pointer" [zActive]="page === currentPage()" (click)="goToPage(page)">
+                {{ page }}
+              </z-pagination-button>
+            </z-pagination-item>
+          } @else if (page === 2 && currentPage() > 4) {
+            <z-pagination-item>
+              <z-pagination-ellipsis/>
+            </z-pagination-item>
+          } @else if (page >= currentPage() - 2 && page <= currentPage() + 2) {
+            <z-pagination-item>
+              <z-pagination-button class="cursor-pointer" [zActive]="page === currentPage()" (click)="goToPage(page)">
+                {{ page }}
+              </z-pagination-button>
+            </z-pagination-item>
+          } @else if (page === totalPages() - 1 && currentPage() < totalPages() - 3) {
+            <z-pagination-item>
+              <z-pagination-ellipsis/>
+            </z-pagination-item>
+          } @else if (page === totalPages()) {
+            <z-pagination-item>
+              <z-pagination-button class="cursor-pointer" [zActive]="page === currentPage()" (click)="goToPage(page)">
+                {{ page }}
+              </z-pagination-button>
+            </z-pagination-item>
+          }
+        }
+
+        <z-pagination-item>
+          <z-pagination-next class="cursor-pointer" (click)="goToNext()"/>
+        </z-pagination-item>
+      </z-pagination-content>
+    </div>
   </div>
 </app-layout>

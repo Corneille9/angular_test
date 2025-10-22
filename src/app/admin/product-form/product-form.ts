@@ -1,13 +1,12 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import {Component, inject, OnInit, signal} from '@angular/core';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
 
-import { ZardButtonComponent } from '@shared/components/button/button.component';
-import { ZardCardComponent } from '@shared/components/card/card.component';
-import { ZardSelectComponent } from '@shared/components/select/select.component';
+import {ZardButtonComponent} from '@shared/components/button/button.component';
+import {ZardCardComponent} from '@shared/components/card/card.component';
+import {ZardSelectComponent} from '@shared/components/select/select.component';
 import {AdminService} from '../../services/admin/admin.service';
 import {Layout} from '../../layout/layout';
-import {ZardLoaderComponent} from '@shared/components/loader/loader.component';
 import {ZardInputDirective} from '@shared/components/input/input.directive';
 
 @Component({
@@ -19,7 +18,6 @@ import {ZardInputDirective} from '@shared/components/input/input.directive';
     ZardCardComponent,
     ZardSelectComponent,
     Layout,
-    ZardLoaderComponent,
     ZardInputDirective
   ],
   templateUrl: './product-form.html',
@@ -75,7 +73,7 @@ export class ProductForm implements OnInit {
     this.adminService.getProduct(id).subscribe({
       next: (product) => {
         this.productForm.patchValue({
-          title: product.title,
+          title: product.name,
           price: product.price,
           description: product.description,
           image: product.image,

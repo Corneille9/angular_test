@@ -6,19 +6,19 @@
       </a>
     </div>
 
-    <z-card class="w-full max-w-sm" zTitle="Login to your account" zDescription="Enter your username below to login to your account">
+    <z-card class="w-full max-w-sm" zTitle="Login to your account" zDescription="Enter your email below to login to your account">
       <div class="space-y-4">
         <div class="space-y-2">
           <fieldset [disabled]="isLoading()">
             <form class="flex flex-col gap-4" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
               <z-form-field>
-                <label z-form-label zRequired>Username</label>
+                <label z-form-label zRequired>Email</label>
                 <z-form-control>
-                  <input z-input type="text" id="username" name="username" formControlName="username" required placeholder="Enter your username">
+                  <input z-input type="email" id="email" name="email" formControlName="email" required placeholder="Enter your email">
                 </z-form-control>
-                @if (loginForm.get('username')?.touched && loginForm.get('username')?.invalid) {
+                @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
                   <z-form-message zType="error">
-                    Username is required
+                    Email is required
                   </z-form-message>
                 }
               </z-form-field>

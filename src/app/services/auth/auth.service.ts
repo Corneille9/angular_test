@@ -2,6 +2,8 @@ import {computed, Inject, inject, Injectable, PLATFORM_ID, signal} from '@angula
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {isPlatformBrowser} from '@angular/common';
+import {AuthResponse, User} from '../../types/user';
+import {API_BASE_URL} from '../../config/api';
 
 @Injectable({
   providedIn: 'root'
@@ -22,8 +24,7 @@ export class AuthService {
       const token = this.getToken();
       if (!token) return;
 
-      const userId = this.getUserIdFromToken(token);
-      this.getUser(userId).subscribe({
+      this.getUser().subscribe({
         next: (user: User) => {
           this.user.set(user);
         },
@@ -36,23 +37,23 @@ export class AuthService {
     }
   }
 
-  getUser(id: number): Observable<User> {
-    return this.http.get<User>(`https://fakestoreapi.com/users/${id}`)
+  getUser(): Observable<User> {
+    return this.http.get<User>(`${API_BASE_URL}/auth/me`)
   }
 
-  async login(request: { username: string, password: string }): Promise<boolean> {
+  async login(request: { email: string, password: string }): Promise<boolean> {
     console.log("Auth: Login in...");
 
     return new Promise<boolean>((resolve, reject) => {
-      this.http.post<{ token: string } | null>('https://fakestoreapi.com/auth/login', request).subscribe({
-        next: async (response: { token: string } | null) => {
+      this.http.post<AuthResponse>(`${API_BASE_URL}/auth/login`, request).subscribe({
+        next: async (response: AuthResponse) => {
           if (!response?.token) {
             reject(new Error("Auth: Login failed"));
             return;
           }
 
           this.saveToken(response.token);
-          this.init();
+          this.user.set(response.user);
           resolve(true);
         },
         error: (error: any) => {
@@ -62,14 +63,43 @@ export class AuthService {
     });
   }
 
-  register(request: Partial<User>) {
-    return this.http.post<User>('https://fakestoreapi.com/users', request);
+  register(request: Record<string, any>) {
+    return new Promise<boolean>((resolve, reject) => {
+      this.http.post<AuthResponse>(`${API_BASE_URL}/auth/register`, request).subscribe({
+        next: async (response: AuthResponse) => {
+          if (!response?.token) {
+            reject(new Error("Auth: Login failed"));
+            return;
+          }
+
+          this.saveToken(response.token);
+          this.user.set(response.user);
+          resolve(true);
+        },
+        error: (error: any) => {
+          reject(error);
+        }
+      });
+    });
   }
 
   logout() {
-    console.log("Auth: Logout");
-    this.user.set(null);
-    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict';
+    return new Promise<boolean>((resolve, reject) => {
+      this.http.post<AuthResponse>(`${API_BASE_URL}/auth/logout`, {}).subscribe({
+        next: async (response: AuthResponse) => {
+          console.log("Auth: Logout");
+          this.user.set(null);
+          document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict';
+          resolve(true);
+        },
+        error: (error: any) => {
+          console.log("Auth: Logout");
+          this.user.set(null);
+          document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict';
+          reject(error);
+        }
+      });
+    });
   }
 
   saveToken(token: string) {
@@ -89,10 +119,6 @@ export class AuthService {
       console.log(e);
       return null;
     }
-  }
-
-  getUserIdFromToken(token: string) {
-    return this.parseJwt(token).sub;
   }
 
   parseJwt(token: string): { sub: number, iat: number, user: string } {
