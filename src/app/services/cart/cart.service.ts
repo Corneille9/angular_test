@@ -16,19 +16,20 @@ export class CartService {
   cart = signal<Cart | null>(null);
   cartItems = computed(() => this.cart()?.items ?? []);
 
-  ngOnInit() {
+  constructor() {
     this.loadCart();
   }
+
 
   async addProduct(product: Product) {
     this.isLoading.set(true);
 
-    this.http.post<Cart>(`${API_BASE_URL}/carts`, {
+    this.http.post<{data: Cart}>(`${API_BASE_URL}/carts`, {
       product_id: product.id,
       quantity: 1
     }).subscribe({
-      next: (cart) => {
-        this.cart.set(cart);
+      next: (response) => {
+        this.cart.set(response.data);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -52,6 +53,7 @@ export class CartService {
   }
 
   loadCart() {
+    console.log("Load cart...")
     this.isLoading.set(true);
 
     this.http.get<Cart>(`${API_BASE_URL}/carts`).subscribe({

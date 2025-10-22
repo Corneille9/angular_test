@@ -1,123 +1,126 @@
-<header class="border-b">
-  <div class="container mx-auto overflow-x-hidden">
-    <ng-content select="[layoutHeader]">
-      <nav class="flex items-center justify-between p-4">
-        <!-- Left: Logo -->
-        <div class="flex items-center space-x-6">
-          <a routerLink="/" class="text-xl font-bold">
-            MyShop
-          </a>
+@if (isPlatformBrowser(platformId)) {
+  <header class="border-b">
+    <div class="container mx-auto overflow-x-hidden">
+      <ng-content select="[layoutHeader]">
+        <nav class="flex items-center justify-between p-4">
+          <!-- Left: Logo -->
+          <div class="flex items-center space-x-6">
+            <a routerLink="/" class="text-xl font-bold">
+              MyShop
+            </a>
 
-          <!-- Navigation -->
-          <div class="flex items-center space-x-1">
-            <div class="relative">
-              <button z-button zType="ghost">
-                Shop
-              </button>
-            </div>
+            <!-- Navigation -->
+            <div class="flex items-center space-x-1">
+              <div class="relative">
+                <button z-button zType="ghost">
+                  Shop
+                </button>
+              </div>
 
-            <div class="relative">
-              <button z-button zType="ghost" z-menu [zMenuTriggerFor]="categoriesMenu">
-                Categories
-                <i class="icon-chevron-down ml-1"></i>
-              </button>
+              <div class="relative">
+                <button z-button zType="ghost" z-menu [zMenuTriggerFor]="categoriesMenu">
+                  Categories
+                  <i class="icon-chevron-down ml-1"></i>
+                </button>
 
-              <ng-template #categoriesMenu>
-                <div z-menu-content class="w-56">
-                  <button z-menu-item (click)="log('Electronics')">
-                    <i class="icon-smartphone mr-2"></i>
-                    Electronics
-                  </button>
-                  <button z-menu-item (click)="log('Fashion')">
-                    <i class="icon-shopping-bag mr-2"></i>
-                    Fashion
-                  </button>
-                  <button z-menu-item (click)="log('Home & Kitchen')">
-                    <i class="icon-home mr-2"></i>
-                    Home & Kitchen
-                  </button>
-                  <z-divider zSpacing="sm"></z-divider>
-                  <button z-menu-item (click)="log('All Categories')">
-                    <i class="icon-grid mr-2"></i>
-                    View All
-                  </button>
-                </div>
-              </ng-template>
-            </div>
+                <ng-template #categoriesMenu>
+                  <div z-menu-content class="w-56">
+                    <button z-menu-item (click)="log('Electronics')">
+                      <i class="icon-smartphone mr-2"></i>
+                      Electronics
+                    </button>
+                    <button z-menu-item (click)="log('Fashion')">
+                      <i class="icon-shopping-bag mr-2"></i>
+                      Fashion
+                    </button>
+                    <button z-menu-item (click)="log('Home & Kitchen')">
+                      <i class="icon-home mr-2"></i>
+                      Home & Kitchen
+                    </button>
+                    <z-divider zSpacing="sm"></z-divider>
+                    <button z-menu-item (click)="log('All Categories')">
+                      <i class="icon-grid mr-2"></i>
+                      View All
+                    </button>
+                  </div>
+                </ng-template>
+              </div>
 
-            <div class="relative">
-              <button z-button zType="ghost">
-                Deals
-              </button>
-            </div>
+              <div class="relative">
+                <button z-button zType="ghost">
+                  Deals
+                </button>
+              </div>
 
-            <div class="relative">
-              <button z-button zType="ghost" z-menu [zMenuTriggerFor]="resourcesMenu">
-                Resources
-                <i class="icon-chevron-down ml-1"></i>
-              </button>
+              <div class="relative">
+                <button z-button zType="ghost" z-menu [zMenuTriggerFor]="resourcesMenu">
+                  Resources
+                  <i class="icon-chevron-down ml-1"></i>
+                </button>
 
-              <ng-template #resourcesMenu>
-                <div z-menu-content class="w-56">
-                  <button z-menu-item (click)="log('Blog')">
-                    <i class="icon-book-open mr-2"></i>
-                    Blog
-                  </button>
-                  <button z-menu-item (click)="log('Help Center')">
-                    <i class="icon-life-buoy mr-2"></i>
-                    Help Center
-                  </button>
-                  <button z-menu-item (click)="log('Contact Us')">
-                    <i class="icon-mail mr-2"></i>
-                    Contact Us
-                  </button>
-                </div>
-              </ng-template>
+                <ng-template #resourcesMenu>
+                  <div z-menu-content class="w-56">
+                    <button z-menu-item (click)="log('Blog')">
+                      <i class="icon-book-open mr-2"></i>
+                      Blog
+                    </button>
+                    <button z-menu-item (click)="log('Help Center')">
+                      <i class="icon-life-buoy mr-2"></i>
+                      Help Center
+                    </button>
+                    <button z-menu-item (click)="log('Contact Us')">
+                      <i class="icon-mail mr-2"></i>
+                      Contact Us
+                    </button>
+                  </div>
+                </ng-template>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Right: Search + Account + Cart -->
-        <div class="flex items-center space-x-4">
-          <input
-            type="text"
-            placeholder="Search products..."
-            class="border rounded-md px-3 py-1 text-sm"
-          />
+          <!-- Right: Search + Account + Cart -->
+          <div class="flex items-center space-x-4">
+            <input
+              type="text"
+              placeholder="Search products..."
+              class="border rounded-md px-3 py-1 text-sm"
+            />
 
-          <z-button (click)="toggleTheme()" zType="outline" class="cursor-pointer size-8" size="icon" [attr.aria-label]="getCurrentTheme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
-            @if (getCurrentTheme() === 'dark') {
-              ☀️
+            <z-button (click)="toggleTheme()" zType="ghost" class="cursor-pointer size-8" size="icon" [attr.aria-label]="getCurrentTheme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+              @if (getCurrentTheme() === 'dark') {
+                ☀️
+              } @else {
+                🌙
+              }
+            </z-button>
+
+            @if (isAuthenticated()) {
+              <!--            <button z-button zType="ghost" (click)="log('Account')">-->
+                <!--              <i class="icon-user mr-1"></i>-->
+                <!--              Account-->
+                <!--            </button>-->
+              <app-cart-button/>
+              <button z-button zType="destructive" zSize="sm" (click)="logout()" class="cursor-pointer">
+                <i class="icon-user mr-1"></i>
+                Logout
+              </button>
             } @else {
-              🌙
+              <button z-button zType="ghost" routerLink="/register" class="cursor-pointer">
+                <i class="icon-user mr-1"></i>
+                Register
+              </button>
+              <button z-button zType="default" routerLink="/login" class="cursor-pointer">
+                <i class="icon-user mr-1"></i>
+                Login
+              </button>
             }
-          </z-button>
+          </div>
+        </nav>
+      </ng-content>
+    </div>
+  </header>
+}
 
-          @if (isAuthenticated()) {
-            <!--            <button z-button zType="ghost" (click)="log('Account')">-->
-              <!--              <i class="icon-user mr-1"></i>-->
-              <!--              Account-->
-              <!--            </button>-->
-            <app-cart-button/>
-            <button z-button zType="destructive" zSize="sm" (click)="logout()" class="cursor-pointer">
-              <i class="icon-user mr-1"></i>
-              Logout
-            </button>
-          } @else {
-            <button z-button zType="ghost" routerLink="/register" class="cursor-pointer">
-              <i class="icon-user mr-1"></i>
-              Register
-            </button>
-            <button z-button zType="default" routerLink="/login" class="cursor-pointer">
-              <i class="icon-user mr-1"></i>
-              Login
-            </button>
-          }
-        </div>
-      </nav>
-    </ng-content>
-  </div>
-</header>
 
 <main class="container mx-auto py-6">
   <ng-content select="[layoutMain]"></ng-content>

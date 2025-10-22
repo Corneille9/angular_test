@@ -1,32 +1,22 @@
 import {HttpHandlerFn, HttpRequest} from '@angular/common/http';
-import {isPlatformBrowser} from '@angular/common';
-import {PLATFORM_ID} from '@angular/core';
-
-const getToken = () => {
-  try {
-    if (!isPlatformBrowser(PLATFORM_ID)) return null;
-
-    return document.cookie
-      .split('; ')
-      .find(cookie => cookie.startsWith('auth_token='))
-      ?.split('=')[1] ?? null;
-  } catch (e) {
-    console.log(e);
-    return null;
-  }
-}
+import {inject} from '@angular/core';
+import {TokenService} from '../services/auth/token.service';
 
 export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn) {
-  const authToken = getToken();
+  const tokenService = inject(TokenService);
+  const authToken = tokenService.getToken();
 
   if (!authToken) {
+    console.log("Auth: No token found");
     return next(req);
   }
 
-  console.log("Auth: Interceptor called: ", authToken)
+  console.log("Auth: Interceptor called: ", authToken);
 
   const newReq = req.clone({
-    headers: req.headers.append('Authorization', authToken),
+    setHeaders: {
+      Authorization: `Bearer ${authToken}`,
+    },
   });
 
   return next(newReq);
