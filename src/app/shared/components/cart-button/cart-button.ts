@@ -37,10 +37,15 @@ export class CartButton {
       zData: {} as iDialogData,
       zOkText: 'Checkout',
       zCancelText: 'Close',
+      zOkDisabled: this.cartService.isLoading() || this.cartItems().length === 0,
       zOnOk: instance => {
+        if (this.cartService.isLoading()) {
+          return;
+        }
+
         this.router.navigate(['/checkout']);
       },
-      zWidth: '425px',
+      zWidth: '800px',
     });
   }
 }

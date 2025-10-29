@@ -1,24 +1,15 @@
 import {Component, inject, OnInit, signal} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-
-import {ZardButtonComponent} from '@shared/components/button/button.component';
-import {ZardCardComponent} from '@shared/components/card/card.component';
-import {ZardSelectComponent} from '@shared/components/select/select.component';
 import {AdminService} from '../../services/admin/admin.service';
 import {Layout} from '../../layout/layout';
-import {ZardInputDirective} from '@shared/components/input/input.directive';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    ZardButtonComponent,
-    ZardCardComponent,
-    ZardSelectComponent,
-    Layout,
-    ZardInputDirective
+    Layout
   ],
   templateUrl: './product-form.html',
   styleUrl: './product-form.css'
@@ -58,67 +49,67 @@ export class ProductForm implements OnInit {
   }
 
   loadCategories() {
-    this.adminService.getCategories().subscribe({
-      next: (data) => {
-        this.categories.set(data);
-      },
-      error: (error) => {
-        console.error('Error loading categories:', error);
-      }
-    });
+    // this.adminService.getCategories().subscribe({
+    //   next: (data) => {
+    //     this.categories.set(data);
+    //   },
+    //   error: (error) => {
+    //     console.error('Error loading categories:', error);
+    //   }
+    // });
   }
 
   loadProduct(id: number) {
-    this.isLoading.set(true);
-    this.adminService.getProduct(id).subscribe({
-      next: (product) => {
-        this.productForm.patchValue({
-          title: product.name,
-          price: product.price,
-          description: product.description,
-          image: product.image,
-          category: product.category
-        });
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading product:', error);
-        this.isLoading.set(false);
-        alert('Error loading product');
-        this.router.navigate(['/admin/products']);
-      }
-    });
+    // this.isLoading.set(true);
+    // this.adminService.getProduct(id).subscribe({
+    //   next: (product) => {
+    //     this.productForm.patchValue({
+    //       title: product.name,
+    //       price: product.price,
+    //       description: product.description,
+    //       image: product.image,
+    //       category: product.category
+    //     });
+    //     this.isLoading.set(false);
+    //   },
+    //   error: (error) => {
+    //     console.error('Error loading product:', error);
+    //     this.isLoading.set(false);
+    //     alert('Error loading product');
+    //     this.router.navigate(['/admin/products']);
+    //   }
+    // });
   }
 
   onSubmit() {
-    if (this.productForm.invalid) {
-      Object.keys(this.productForm.controls).forEach(key => {
-        const control = this.productForm.get(key);
-        if (control?.invalid) {
-          control.markAsTouched();
-        }
-      });
-      return;
-    }
-
-    this.isLoading.set(true);
-    const formData = this.productForm.value;
-
-    const request = this.isEditMode()
-      ? this.adminService.updateProduct(this.productId()!, formData)
-      : this.adminService.createProduct(formData);
-
-    request.subscribe({
-      next: () => {
-        alert(this.isEditMode() ? 'Product updated successfully!' : 'Product created successfully!');
-        this.router.navigate(['/admin/products']);
-      },
-      error: (error) => {
-        console.error('Error saving product:', error);
-        alert('Error saving product');
-        this.isLoading.set(false);
-      }
-    });
+    // if (this.productForm.invalid) {
+    //   Object.keys(this.productForm.controls).forEach(key => {
+    //     const control = this.productForm.get(key);
+    //     if (control?.invalid) {
+    //       control.markAsTouched();
+    //     }
+    //   });
+    //   return;
+    // }
+    //
+    // this.isLoading.set(true);
+    // const formData = this.productForm.value;
+    //
+    // const request = this.isEditMode()
+    //   ? this.adminService.updateProduct(this.productId()!, formData)
+    //   : this.adminService.createProduct(formData);
+    //
+    // request.subscribe({
+    //   next: () => {
+    //     alert(this.isEditMode() ? 'Product updated successfully!' : 'Product created successfully!');
+    //     this.router.navigate(['/admin/products']);
+    //   },
+    //   error: (error) => {
+    //     console.error('Error saving product:', error);
+    //     alert('Error saving product');
+    //     this.isLoading.set(false);
+    //   }
+    // });
   }
 
   cancel() {

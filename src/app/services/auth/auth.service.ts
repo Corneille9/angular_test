@@ -1,9 +1,9 @@
-import {computed, inject, Injectable, OnInit, signal} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {AuthResponse, User} from '../../types/user';
-import {API_BASE_URL} from '../../config/api';
-import {TokenService} from './token.service';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { AuthResponse, User, LoginRequest, RegisterRequest, UpdateProfileRequest } from '../../types/user';
+import { API_BASE_URL } from '../../config/api';
+import { TokenService } from './token.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +13,7 @@ export class AuthService {
 
   user = signal<User | null>(null);
   isAuthenticated = computed(() => this.user() !== null);
+  isAdmin = computed(() => this.user()?.role === 'admin');
 
   constructor() {
     this.init();
@@ -40,10 +41,10 @@ export class AuthService {
   }
 
   getUser(): Observable<User> {
-    return this.http.post<User>(`${API_BASE_URL}/auth/me`, {})
+    return this.http.get<User>(`${API_BASE_URL}/auth/me`)
   }
 
-  async login(request: { email: string, password: string }): Promise<boolean> {
+  async login(request: LoginRequest): Promise<boolean> {
     console.log("Auth: Login in...");
 
     return new Promise<boolean>((resolve, reject) => {
@@ -65,12 +66,12 @@ export class AuthService {
     });
   }
 
-  register(request: Record<string, any>) {
+  async register(request: RegisterRequest): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       this.http.post<AuthResponse>(`${API_BASE_URL}/auth/register`, request).subscribe({
         next: async (response: AuthResponse) => {
           if (!response?.token) {
-            reject(new Error("Auth: Login failed"));
+            reject(new Error("Auth: Registration failed"));
             return;
           }
 
@@ -85,30 +86,37 @@ export class AuthService {
     });
   }
 
-  logout() {
+  updateProfile(request: UpdateProfileRequest): Observable<User> {
+    return this.http.put<User>(`${API_BASE_URL}/auth/profile/update`, request);
+  }
+
+  async logout(): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
-      this.http.post<AuthResponse>(`${API_BASE_URL}/auth/logout`, {}).subscribe({
-        next: async (response: AuthResponse) => {
+      this.http.post<{ message: string }>(`${API_BASE_URL}/auth/logout`, {}).subscribe({
+        next: async (response) => {
           console.log("Auth: Logout");
           this.user.set(null);
-          document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict';
+          this.removeToken();
           resolve(true);
         },
         error: (error: any) => {
           console.log("Auth: Logout");
           this.user.set(null);
-          document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict';
+          this.removeToken();
           reject(error);
         }
       });
     });
   }
 
-  saveToken(token: string) {
+  saveToken(token: string): void {
     const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
     document.cookie = `auth_token=${token}; path=/; expires=${expires}; SameSite=None; Secure`;
   }
 
+  removeToken(): void {
+    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict';
+  }
 
   parseJwt(token: string): { sub: number, iat: number, user: string } {
     const base64Url = token.split('.')[1];

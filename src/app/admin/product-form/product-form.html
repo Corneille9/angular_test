@@ -1,151 +1,151 @@
 <app-layout>
-  <div layoutMain class="p-6 max-w-4xl mx-auto">
-    <div class="mb-6">
-      <button
-        z-button
-        zType="ghost"
-        (click)="cancel()"
-        class="mb-4">
-        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-        Back to Products
-      </button>
-      <h1 class="text-3xl font-bold">
-        {{ isEditMode() ? 'Edit Product' : 'Add New Product' }}
-      </h1>
-    </div>
+<!--  <div layoutMain class="p-6 max-w-4xl mx-auto">-->
+<!--    <div class="mb-6">-->
+<!--      <button-->
+<!--        z-button-->
+<!--        zType="ghost"-->
+<!--        (click)="cancel()"-->
+<!--        class="mb-4">-->
+<!--        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>-->
+<!--        </svg>-->
+<!--        Back to Products-->
+<!--      </button>-->
+<!--      <h1 class="text-3xl font-bold">-->
+<!--        {{ isEditMode() ? 'Edit Product' : 'Add New Product' }}-->
+<!--      </h1>-->
+<!--    </div>-->
 
-    <z-card class="p-6">
-      <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
-        <div class="space-y-6">
-          <!-- Title -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Product Title *
-            </label>
-            <input
-              z-input
-              type="text"
-              formControlName="title"
-              placeholder="Enter product title"
-              class="w-full"
-              [class.border-red-500]="productForm.get('title')?.invalid && productForm.get('title')?.touched"
-            />
-            @if (productForm.get('title')?.invalid && productForm.get('title')?.touched) {
-              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Title') }}</p>
-            }
-          </div>
+<!--    <z-card class="p-6">-->
+<!--      <form [formGroup]="productForm" (ngSubmit)="onSubmit()">-->
+<!--        <div class="space-y-6">-->
+<!--          &lt;!&ndash; Title &ndash;&gt;-->
+<!--          <div>-->
+<!--            <label class="block text-sm font-medium text-gray-700 mb-2">-->
+<!--              Product Title *-->
+<!--            </label>-->
+<!--            <input-->
+<!--              z-input-->
+<!--              type="text"-->
+<!--              formControlName="title"-->
+<!--              placeholder="Enter product title"-->
+<!--              class="w-full"-->
+<!--              [class.border-red-500]="productForm.get('title')?.invalid && productForm.get('title')?.touched"-->
+<!--            />-->
+<!--            @if (productForm.get('title')?.invalid && productForm.get('title')?.touched) {-->
+<!--              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Title') }}</p>-->
+<!--            }-->
+<!--          </div>-->
 
-          <!-- Price -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Price *
-            </label>
-            <input
-              z-input
-              type="number"
-              formControlName="price"
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              class="w-full"
-              [class.border-red-500]="productForm.get('price')?.invalid && productForm.get('price')?.touched"
-            />
-            @if (productForm.get('price')?.invalid && productForm.get('price')?.touched) {
-              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Price') }}</p>
-            }
-          </div>
+<!--          &lt;!&ndash; Price &ndash;&gt;-->
+<!--          <div>-->
+<!--            <label class="block text-sm font-medium text-gray-700 mb-2">-->
+<!--              Price *-->
+<!--            </label>-->
+<!--            <input-->
+<!--              z-input-->
+<!--              type="number"-->
+<!--              formControlName="price"-->
+<!--              placeholder="0.00"-->
+<!--              step="0.01"-->
+<!--              min="0"-->
+<!--              class="w-full"-->
+<!--              [class.border-red-500]="productForm.get('price')?.invalid && productForm.get('price')?.touched"-->
+<!--            />-->
+<!--            @if (productForm.get('price')?.invalid && productForm.get('price')?.touched) {-->
+<!--              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Price') }}</p>-->
+<!--            }-->
+<!--          </div>-->
 
-          <!-- Category -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Category *
-            </label>
-            <select
-              z-select
-              formControlName="category"
-              class="w-full"
-              [class.border-red-500]="productForm.get('category')?.invalid && productForm.get('category')?.touched"
-            >
-              <option value="">Select a category</option>
-              @for (cat of categories(); track cat) {
-                <option [value]="cat">{{ cat }}</option>
-              }
-            </select>
-            @if (productForm.get('category')?.invalid && productForm.get('category')?.touched) {
-              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Category') }}</p>
-            }
-          </div>
+<!--          &lt;!&ndash; Category &ndash;&gt;-->
+<!--          <div>-->
+<!--            <label class="block text-sm font-medium text-gray-700 mb-2">-->
+<!--              Category *-->
+<!--            </label>-->
+<!--            <select-->
+<!--              z-select-->
+<!--              formControlName="category"-->
+<!--              class="w-full"-->
+<!--              [class.border-red-500]="productForm.get('category')?.invalid && productForm.get('category')?.touched"-->
+<!--            >-->
+<!--              <option value="">Select a category</option>-->
+<!--              @for (cat of categories(); track cat) {-->
+<!--                <option [value]="cat">{{ cat }}</option>-->
+<!--              }-->
+<!--            </select>-->
+<!--            @if (productForm.get('category')?.invalid && productForm.get('category')?.touched) {-->
+<!--              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Category') }}</p>-->
+<!--            }-->
+<!--          </div>-->
 
-          <!-- Image URL -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Image URL *
-            </label>
-            <input
-              z-input
-              type="url"
-              formControlName="image"
-              placeholder="https://example.com/image.jpg"
-              class="w-full"
-              [class.border-red-500]="productForm.get('image')?.invalid && productForm.get('image')?.touched"
-            />
-            @if (productForm.get('image')?.invalid && productForm.get('image')?.touched) {
-              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Image') }}</p>
-            }
-            @if (productForm.get('image')?.value) {
-              <div class="mt-3">
-<!--                <img-->
-<!--                  [src]="productForm.get('image')?.value"-->
-<!--                  alt="Preview"-->
-<!--                  class="w-32 h-32 object-contain border rounded-lg"-->
-<!--                  (error)="$event.target.src='https://via.placeholder.com/150'"-->
-<!--                />-->
-              </div>
-            }
-          </div>
+<!--          &lt;!&ndash; Image URL &ndash;&gt;-->
+<!--          <div>-->
+<!--            <label class="block text-sm font-medium text-gray-700 mb-2">-->
+<!--              Image URL *-->
+<!--            </label>-->
+<!--            <input-->
+<!--              z-input-->
+<!--              type="url"-->
+<!--              formControlName="image"-->
+<!--              placeholder="https://example.com/image.jpg"-->
+<!--              class="w-full"-->
+<!--              [class.border-red-500]="productForm.get('image')?.invalid && productForm.get('image')?.touched"-->
+<!--            />-->
+<!--            @if (productForm.get('image')?.invalid && productForm.get('image')?.touched) {-->
+<!--              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Image') }}</p>-->
+<!--            }-->
+<!--            @if (productForm.get('image')?.value) {-->
+<!--              <div class="mt-3">-->
+<!--&lt;!&ndash;                <img&ndash;&gt;-->
+<!--&lt;!&ndash;                  [src]="productForm.get('image')?.value"&ndash;&gt;-->
+<!--&lt;!&ndash;                  alt="Preview"&ndash;&gt;-->
+<!--&lt;!&ndash;                  class="w-32 h-32 object-contain border rounded-lg"&ndash;&gt;-->
+<!--&lt;!&ndash;                  (error)="$event.target.src='https://via.placeholder.com/150'"&ndash;&gt;-->
+<!--&lt;!&ndash;                />&ndash;&gt;-->
+<!--              </div>-->
+<!--            }-->
+<!--          </div>-->
 
-          <!-- Description -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Description *
-            </label>
-            <textarea
-              z-textarea
-              formControlName="description"
-              placeholder="Enter product description"
-              rows="5"
-              class="w-full"
-              [class.border-red-500]="productForm.get('description')?.invalid && productForm.get('description')?.touched"
-            ></textarea>
-            @if (productForm.get('description')?.invalid && productForm.get('description')?.touched) {
-              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Description') }}</p>
-            }
-          </div>
+<!--          &lt;!&ndash; Description &ndash;&gt;-->
+<!--          <div>-->
+<!--            <label class="block text-sm font-medium text-gray-700 mb-2">-->
+<!--              Description *-->
+<!--            </label>-->
+<!--            <textarea-->
+<!--              z-textarea-->
+<!--              formControlName="description"-->
+<!--              placeholder="Enter product description"-->
+<!--              rows="5"-->
+<!--              class="w-full"-->
+<!--              [class.border-red-500]="productForm.get('description')?.invalid && productForm.get('description')?.touched"-->
+<!--            ></textarea>-->
+<!--            @if (productForm.get('description')?.invalid && productForm.get('description')?.touched) {-->
+<!--              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Description') }}</p>-->
+<!--            }-->
+<!--          </div>-->
 
-          <!-- Actions -->
-          <div class="flex gap-4 pt-4">
-            <button
-              z-button
-              zType="default"
-              type="submit"
-              [disabled]="isLoading()"
-              class="flex-1">
-              {{ isLoading() ? 'Saving...' : (isEditMode() ? 'Update Product' : 'Create Product') }}
-            </button>
-            <button
-              z-button
-              zType="default"
-              type="button"
-              (click)="cancel()"
-              [disabled]="isLoading()"
-              class="flex-1">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </form>
-    </z-card>
-  </div>
+<!--          &lt;!&ndash; Actions &ndash;&gt;-->
+<!--          <div class="flex gap-4 pt-4">-->
+<!--            <button-->
+<!--              z-button-->
+<!--              zType="default"-->
+<!--              type="submit"-->
+<!--              [disabled]="isLoading()"-->
+<!--              class="flex-1">-->
+<!--              {{ isLoading() ? 'Saving...' : (isEditMode() ? 'Update Product' : 'Create Product') }}-->
+<!--            </button>-->
+<!--            <button-->
+<!--              z-button-->
+<!--              zType="default"-->
+<!--              type="button"-->
+<!--              (click)="cancel()"-->
+<!--              [disabled]="isLoading()"-->
+<!--              class="flex-1">-->
+<!--              Cancel-->
+<!--            </button>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </form>-->
+<!--    </z-card>-->
+<!--  </div>-->
 </app-layout>

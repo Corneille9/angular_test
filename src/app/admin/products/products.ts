@@ -1,19 +1,13 @@
 import {Component, inject, OnInit, signal} from '@angular/core';
 import {Router} from '@angular/router';
-import {ZardButtonComponent} from '@shared/components/button/button.component';
-import {ZardLoaderComponent} from '@shared/components/loader/loader.component';
-import {ZardCardComponent} from '@shared/components/card/card.component';
 import {AdminService} from '../../services/admin/admin.service';
-import {Product} from '../../types/product';
+import {Product} from '../../types';
 import {Layout} from '../../layout/layout';
 
 @Component({
   selector: 'app-admin-products',
   standalone: true,
   imports: [
-    ZardButtonComponent,
-    ZardLoaderComponent,
-    ZardCardComponent,
     Layout
   ],
   templateUrl: './products.html',
@@ -41,17 +35,17 @@ export class Products implements OnInit {
   }
 
   loadProducts() {
-    this.isLoading.set(true);
-    this.adminService.getAllProducts().subscribe({
-      next: (data) => {
-        this.products.set(data);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading products:', error);
-        this.isLoading.set(false);
-      }
-    });
+    // this.isLoading.set(true);
+    // this.adminService.getAllProducts().subscribe({
+    //   next: (data) => {
+    //     this.products.set(data);
+    //     this.isLoading.set(false);
+    //   },
+    //   error: (error) => {
+    //     console.error('Error loading products:', error);
+    //     this.isLoading.set(false);
+    //   }
+    // });
   }
 
   editProduct(product: Product) {
@@ -59,18 +53,18 @@ export class Products implements OnInit {
   }
 
   deleteProduct(product: Product) {
-    if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
-      this.adminService.deleteProduct(product.id).subscribe({
-        next: () => {
-          this.products.set(this.products().filter(p => p.id !== product.id));
-          alert('Product deleted successfully!');
-        },
-        error: (error) => {
-          console.error('Error deleting product:', error);
-          alert('Error deleting product');
-        }
-      });
-    }
+    // if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
+    //   this.adminService.deleteProduct(product.id).subscribe({
+    //     next: () => {
+    //       this.products.set(this.products().filter(p => p.id !== product.id));
+    //       alert('Product deleted successfully!');
+    //     },
+    //     error: (error: any) => {
+    //       console.error('Error deleting product:', error);
+    //       alert('Error deleting product');
+    //     }
+    //   });
+    // }
   }
 
   addNewProduct() {

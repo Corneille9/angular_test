@@ -1,8 +1,7 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Cart} from '../../types/cart';
-import {Product} from '../../types/product';
-import {AuthService} from '../auth/auth.service';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {AddToCartRequest, ApiResponse, ApiResponseWithMessage, Cart, UpdateCartRequest} from '../../types';
 import {API_BASE_URL} from '../../config/api';
 
 @Injectable({
@@ -10,62 +9,91 @@ import {API_BASE_URL} from '../../config/api';
 })
 export class CartService {
   private http = inject(HttpClient);
-  private authService = inject(AuthService);
-  isLoading = signal(false);
 
+  isLoading = signal(false);
   cart = signal<Cart | null>(null);
   cartItems = computed(() => this.cart()?.items ?? []);
+  cartTotal = computed(() => this.cart()?.total ?? 0);
+  cartItemsCount = computed(() => this.cart()?.items_count ?? 0);
 
   constructor() {
     this.loadCart();
   }
 
-
-  async addProduct(product: Product) {
+  loadCart(): void {
     this.isLoading.set(true);
-
-    this.http.post<{data: Cart}>(`${API_BASE_URL}/carts`, {
-      product_id: product.id,
-      quantity: 1
-    }).subscribe({
+    this.getCart().subscribe({
       next: (response) => {
-        this.cart.set(response.data);
+        if ('data' in response) {
+          this.cart.set(response.data);
+        }
         this.isLoading.set(false);
       },
       error: (error) => {
-        console.error(error);
+        console.error('Failed to load cart:', error);
         this.isLoading.set(false);
       }
     });
   }
 
-  removeProduct(product: Product) {
-    if (!this.cart()) return;
+  getCart(): Observable<ApiResponse<Cart> | { message: string }> {
+    return this.http.get<ApiResponse<Cart> | { message: string }>(`${API_BASE_URL}/carts`);
+  }
 
-    this.http.delete<{ data: Cart }>(`${API_BASE_URL}/carts/${this.cart()?.id}?product_id=${product.id}`,).subscribe({
-      next: (response) => {
-        this.cart.set(response.data);
-      },
-      error: (error) => {
-        console.error(error);
-      }
+  addToCart(data: AddToCartRequest): Promise<void> {
+    this.isLoading.set(true);
+
+    return new Promise((resolve, reject) => {
+      this.http.post<ApiResponseWithMessage<Cart>>(`${API_BASE_URL}/carts`, data).subscribe({
+        next: (response) => {
+          this.cart.set(response.data);
+          this.isLoading.set(false);
+          resolve();
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          reject(error);
+        }
+      });
     });
   }
 
-  loadCart() {
-    console.log("Load cart...")
+  updateCartItem(data: UpdateCartRequest): Promise<void> {
     this.isLoading.set(true);
-
-    this.http.get<Cart>(`${API_BASE_URL}/carts`).subscribe({
-      next: (cart) => {
-        this.cart.set(cart);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error(error);
-        this.isLoading.set(false);
-      }
+    return new Promise((resolve, reject) => {
+      this.http.put<ApiResponseWithMessage<Cart>>(`${API_BASE_URL}/carts`, data).subscribe({
+        next: (response) => {
+          this.cart.set(response.data);
+          this.isLoading.set(false);
+          resolve();
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          reject(error);
+        }
+      });
     });
+  }
 
+  removeFromCart(productId: number): Promise<boolean> {
+    this.isLoading.set(true);
+    const params = new HttpParams().set('product_id', productId.toString());
+    return new Promise((resolve, reject) => {
+      this.http.delete<ApiResponseWithMessage<Cart>>(`${API_BASE_URL}/carts`, {params}).subscribe({
+        next: (response) => {
+          this.cart.set(response.data);
+          this.isLoading.set(false);
+          resolve(true);
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          reject(error);
+        }
+      });
+    });
+  }
+
+  clearCart(): void {
+    this.cart.set(null);
   }
 }

@@ -1,17 +1,11 @@
 import {Component, inject, signal} from '@angular/core';
-import {AdminService, DashboardStats} from '../../services/admin/admin.service';
-import {ZardCardComponent} from '@shared/components/card/card.component';
-import {ZardLoaderComponent} from '@shared/components/loader/loader.component';
+import {AdminService} from '../../services/admin/admin.service';
 import {Layout} from '../../layout/layout';
-import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-dashbaord',
   imports: [
-    ZardCardComponent,
-    ZardLoaderComponent,
-    Layout,
-    RouterLink
+    Layout
   ],
   templateUrl: './dashbaord.html',
   styleUrl: './dashbaord.css'
@@ -19,7 +13,7 @@ import {RouterLink} from '@angular/router';
 export class Dashbaord {
   private adminService = inject(AdminService);
 
-  stats = signal<DashboardStats | null>(null);
+  stats = signal<any | null>(null);
   isLoading = signal(true);
 
   ngOnInit() {
@@ -28,15 +22,15 @@ export class Dashbaord {
 
   loadStats() {
     this.isLoading.set(true);
-    this.adminService.getDashboardStats().subscribe({
-      next: (data) => {
-        this.stats.set(data);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading stats:', error);
-        this.isLoading.set(false);
-      }
-    });
+    // this.adminService.getDashboardStats().subscribe({
+    //   next: (data) => {
+    //     this.stats.set(data);
+    //     this.isLoading.set(false);
+    //   },
+    //   error: (error) => {
+    //     console.error('Error loading stats:', error);
+    //     this.isLoading.set(false);
+    //   }
+    // });
   }
 }

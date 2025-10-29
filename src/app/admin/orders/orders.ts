@@ -1,21 +1,14 @@
 import {Component, inject, signal} from '@angular/core';
 import {Layout} from "../../layout/layout";
 import {ReactiveFormsModule} from "@angular/forms";
-import {ZardButtonComponent} from "@shared/components/button/button.component";
-import {ZardCardComponent} from "@shared/components/card/card.component";
-import {ZardLoaderComponent} from "@shared/components/loader/loader.component";
-import {ZardSelectComponent} from "@shared/components/select/select.component";
-import {AdminService, Order} from '../../services/admin/admin.service';
+import {AdminService} from '../../services/admin/admin.service';
+import {Order} from '../../types';
 
 @Component({
   selector: 'app-orders',
   imports: [
     Layout,
-    ReactiveFormsModule,
-    ZardButtonComponent,
-    ZardCardComponent,
-    ZardLoaderComponent,
-    ZardSelectComponent
+    ReactiveFormsModule
   ],
   templateUrl: './orders.html',
   styleUrl: './orders.css'
@@ -27,32 +20,32 @@ export class Orders {
   isLoading = signal(true);
   selectedOrder = signal<Order | null>(null);
 
-  statusOptions: Order['status'][] = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+  statusOptions: Order['status'][] = ['pending', 'shipped', 'cancelled'];
 
   ngOnInit() {
     this.loadOrders();
   }
 
   loadOrders() {
-    this.isLoading.set(true);
-    this.adminService.getAllOrders().subscribe({
-      next: (data) => {
-        const orders: Order[] = data.map(cart => ({
-          id: cart.id,
-          userId: cart.userId,
-          date: cart.date,
-          products: cart.products || [],
-          status: 'pending' as Order['status'],
-          total: this.calculateTotal(cart.products || [])
-        }));
-        this.orders.set(orders);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading orders:', error);
-        this.isLoading.set(false);
-      }
-    });
+    // this.isLoading.set(true);
+    // this.adminService.getAllOrders().subscribe({
+    //   next: (data) => {
+    //     const orders: Order[] = data.map(cart => ({
+    //       id: cart.id,
+    //       userId: cart.userId,
+    //       date: cart.date,
+    //       products: cart.products || [],
+    //       status: 'pending' as Order['status'],
+    //       total: this.calculateTotal(cart.products || [])
+    //     }));
+    //     this.orders.set(orders);
+    //     this.isLoading.set(false);
+    //   },
+    //   error: (error: any) => {
+    //     console.error('Error loading orders:', error);
+    //     this.isLoading.set(false);
+    //   }
+    // });
   }
 
   calculateTotal(products: any[]): number {
@@ -61,28 +54,28 @@ export class Orders {
   }
 
   updateStatus(order: Order, newStatus: Order['status']) {
-    this.adminService.updateOrderStatus(order.id, newStatus).subscribe({
-      next: () => {
-        // Update local state
-        const updatedOrders = this.orders().map(o =>
-          o.id === order.id ? {...o, status: newStatus} : o
-        );
-        this.orders.set(updatedOrders);
-        alert('Order status updated successfully!');
-      },
-      error: (error) => {
-        console.error('Error updating order status:', error);
-        alert('Error updating order status');
-      }
-    });
+    // this.adminService.updateOrderStatus(order.id, newStatus).subscribe({
+    //   next: () => {
+    //     // Update local state
+    //     const updatedOrders = this.orders().map(o =>
+    //       o.id === order.id ? {...o, status: newStatus} : o
+    //     );
+    //     this.orders.set(updatedOrders);
+    //     alert('Order status updated successfully!');
+    //   },
+    //   error: (error) => {
+    //     console.error('Error updating order status:', error);
+    //     alert('Error updating order status');
+    //   }
+    // });
   }
 
   getStatusColor(status: Order['status']): string {
-    const colors = {
+    const colors: Record<string, string> = {
       pending: 'bg-yellow-100 text-yellow-800',
-      processing: 'bg-blue-100 text-blue-800',
+      // processing: 'bg-blue-100 text-blue-800',
       shipped: 'bg-purple-100 text-purple-800',
-      delivered: 'bg-green-100 text-green-800',
+      // delivered: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';

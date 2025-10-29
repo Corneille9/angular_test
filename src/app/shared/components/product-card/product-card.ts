@@ -1,7 +1,7 @@
 import {Component, EventEmitter, inject, Input, Output} from '@angular/core';
 import {ZardButtonComponent} from "@shared/components/button/button.component";
 import {ZardCardComponent} from "@shared/components/card/card.component";
-import {Product} from '../../../types/product';
+import {Product} from '../../../types';
 import {CartService} from '../../../services/cart/cart.service';
 
 @Component({

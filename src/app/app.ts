@@ -1,10 +1,11 @@
 import {Component, inject, signal} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {DarkModeService} from './services/darkmode/darkmode.service';
+import {ZardToastComponent} from '@shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ZardToastComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

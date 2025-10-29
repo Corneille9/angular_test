@@ -1,89 +1,131 @@
-import { inject, Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Product } from '../../types/product';
-
-export interface DashboardStats {
-  totalProducts: number;
-  totalOrders: number;
-  totalRevenue: number;
-  totalUsers: number;
-}
-
-export interface Order {
-  id: number;
-  userId: number;
-  date: string;
-  products: Array<{
-    productId: number;
-    quantity: number;
-  }>;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  total: number;
-}
+import {inject, Injectable, signal} from '@angular/core';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {ApiResponse, ApiResponseWithMessage, CreateUserRequest, DashboardStatistics, Order, OrderStatistics, PaginatedResponse, Payment, PaymentStatistics, StorePaymentRequest, UpdateOrderRequest, UpdateUserRequest, User} from '../../types';
+import {API_BASE_URL} from '../../config/api';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminService {
   private http = inject(HttpClient);
-  private base = 'https://fakestoreapi.com';
 
   isLoading = signal(false);
 
-  getAllProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.base}/products`);
+  // Dashboard Methods
+  getDashboardStatistics(): Observable<DashboardStatistics> {
+    return this.http.get<DashboardStatistics>(`${API_BASE_URL}/admin/dashboard`);
   }
 
-  getProduct(id: number): Observable<Product> {
-    return this.http.get<Product>(`${this.base}/products/${id}`);
+  getSalesChartData(period: string = 'week'): Observable<any> {
+    const params = new HttpParams().set('period', period);
+    return this.http.get<any>(`${API_BASE_URL}/admin/dashboard/sales-chart`, {params});
   }
 
-  createProduct(product: Partial<Product>): Observable<Product> {
-    return this.http.post<Product>(`${this.base}/products`, product);
+  // Order Management Methods
+  getOrders(params?: {
+    per_page?: number;
+    status?: string;
+    user_id?: number;
+    search?: string;
+    start_date?: string;
+    end_date?: string;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
+  }): Observable<PaginatedResponse<Order>> {
+    let httpParams = new HttpParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          httpParams = httpParams.set(key, value.toString());
+        }
+      });
+    }
+    return this.http.get<PaginatedResponse<Order>>(`${API_BASE_URL}/admin/orders`, {params: httpParams});
   }
 
-  updateProduct(id: any, product: Partial<Product>): Observable<Product> {
-    return this.http.put<Product>(`${this.base}/products/${id}`, product);
+  getOrderStatistics(): Observable<OrderStatistics> {
+    return this.http.get<OrderStatistics>(`${API_BASE_URL}/admin/orders/statistics`);
   }
 
-  deleteProduct(id: any): Observable<void> {
-    return this.http.delete<void>(`${this.base}/products/${id}`);
+  getOrder(id: number): Observable<ApiResponse<Order>> {
+    return this.http.get<ApiResponse<Order>>(`${API_BASE_URL}/admin/orders/${id}`);
   }
 
-  // Orders Management
-  getAllOrders(): Observable<Order[]> {
-    return this.http.get<Order[]>(`${this.base}/carts`);
+  updateOrder(id: number, data: UpdateOrderRequest): Observable<ApiResponseWithMessage<Order>> {
+    return this.http.put<ApiResponseWithMessage<Order>>(`${API_BASE_URL}/admin/orders/${id}`, data);
   }
 
-  getOrder(id: any): Observable<Order> {
-    return this.http.get<Order>(`${this.base}/carts/${id}`);
+  deleteOrder(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${API_BASE_URL}/admin/orders/${id}`);
   }
 
-  updateOrderStatus(id: any, status: Order['status']): Observable<Order> {
-    return this.http.patch<Order>(`${this.base}/carts/${id}`, { status });
+  // Payment Management Methods
+  getPayments(params?: {
+    per_page?: number;
+    status?: string;
+    payment_method?: string;
+    order_id?: number;
+    start_date?: string;
+    end_date?: string;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
+  }): Observable<PaginatedResponse<Payment>> {
+    let httpParams = new HttpParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          httpParams = httpParams.set(key, value.toString());
+        }
+      });
+    }
+    return this.http.get<PaginatedResponse<Payment>>(`${API_BASE_URL}/admin/payments`, {params: httpParams});
   }
 
-  getDashboardStats(): Observable<DashboardStats> {
-    return new Observable(observer => {
-      Promise.all([
-        this.http.get<Product[]>(`${this.base}/products`).toPromise(),
-        this.http.get<Order[]>(`${this.base}/carts`).toPromise(),
-        this.http.get<any[]>(`${this.base}/users`).toPromise()
-      ]).then(([products, orders, users]) => {
-        const stats: DashboardStats = {
-          totalProducts: products?.length || 0,
-          totalOrders: orders?.length || 0,
-          totalRevenue: orders?.reduce((sum, order) => sum + (order.total || 0), 0) || 0,
-          totalUsers: users?.length || 0
-        };
-        observer.next(stats);
-        observer.complete();
-      }).catch(error => observer.error(error));
-    });
+  getPaymentStatistics(): Observable<PaymentStatistics> {
+    return this.http.get<PaymentStatistics>(`${API_BASE_URL}/admin/payments/statistics`);
   }
 
-  getCategories(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.base}/products/categories`);
+  getPayment(id: number): Observable<ApiResponse<Payment>> {
+    return this.http.get<ApiResponse<Payment>>(`${API_BASE_URL}/admin/payments/${id}`);
+  }
+
+  createPayment(data: StorePaymentRequest): Observable<ApiResponseWithMessage<Payment>> {
+    return this.http.post<ApiResponseWithMessage<Payment>>(`${API_BASE_URL}/admin/payments`, data);
+  }
+
+  // User Management Methods
+  getUsers(params?: {
+    per_page?: number;
+    search?: string;
+    role?: string;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
+  }): Observable<PaginatedResponse<User>> {
+    let httpParams = new HttpParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          httpParams = httpParams.set(key, value.toString());
+        }
+      });
+    }
+    return this.http.get<PaginatedResponse<User>>(`${API_BASE_URL}/admin/users`, {params: httpParams});
+  }
+
+  getUser(id: number): Observable<ApiResponse<User>> {
+    return this.http.get<ApiResponse<User>>(`${API_BASE_URL}/admin/users/${id}`);
+  }
+
+  createUser(data: CreateUserRequest): Observable<ApiResponseWithMessage<User>> {
+    return this.http.post<ApiResponseWithMessage<User>>(`${API_BASE_URL}/admin/users`, data);
+  }
+
+  updateUser(id: number, data: UpdateUserRequest): Observable<ApiResponseWithMessage<User>> {
+    return this.http.put<ApiResponseWithMessage<User>>(`${API_BASE_URL}/admin/users/${id}`, data);
+  }
+
+  deleteUser(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${API_BASE_URL}/admin/users/${id}`);
   }
 }

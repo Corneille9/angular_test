@@ -1,6 +1,119 @@
 <app-layout>
   <div layoutMain class="p-6">
-    <h1 class="text-2xl font-bold mb-6">Featured Products</h1>
+    <h1 class="text-2xl font-bold mb-6">Products</h1>
+
+    <!-- Filters Section -->
+    <div class="mb-8 bg-card border border-border rounded-lg p-6">
+      <h2 class="text-lg font-semibold mb-4">Filters</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <!-- Search -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Search</label>
+          <input
+            z-input
+            type="text"
+            placeholder="Search products..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchInput()"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Category Filter -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Category</label>
+          @if (!isLoadingCategories()) {
+            <z-select
+              [placeholder]="'All Categories'"
+              [(ngModel)]="selectedCategory"
+              (selectionChange)="onCategoryChange($event)"
+              class="w-full"
+            >
+              <z-select-item value="all">All Categories</z-select-item>
+              @for (category of categories(); track category.id) {
+                <z-select-item [value]="`${category.id}`">
+                  {{ category.name }}
+                </z-select-item>
+              }
+
+            </z-select>
+          }
+
+        </div>
+
+        <!-- Sort By -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Sort By</label>
+          <z-select
+            [placeholder]="'Default'"
+            [(ngModel)]="selectedSort"
+            (selectionChange)="onSortChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="default">Default</z-select-item>
+            <z-select-item value="price_asc">Price: Low to High</z-select-item>
+            <z-select-item value="price_desc">Price: High to Low</z-select-item>
+            <z-select-item value="name_asc">Name: A to Z</z-select-item>
+            <z-select-item value="name_desc">Name: Z to A</z-select-item>
+            <z-select-item value="created_at_desc">Newest First</z-select-item>
+          </z-select>
+        </div>
+
+        <!-- In Stock Only -->
+        <div class="flex items-end">
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              [(ngModel)]="inStockOnly"
+              (change)="applyFilters()"
+              class="w-4 h-4 text-primary border-border rounded focus:ring-primary"
+            />
+            <span class="text-sm font-medium">In Stock Only</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Price Range -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Min Price</label>
+          <input
+            z-input
+            type="number"
+            placeholder="0"
+            [(ngModel)]="minPrice"
+            (change)="applyFilters()"
+            min="0"
+            class="w-full"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">Max Price</label>
+          <input
+            z-input
+            type="number"
+            placeholder="9999"
+            [(ngModel)]="maxPrice"
+            (change)="applyFilters()"
+            min="0"
+            class="w-full"
+          />
+        </div>
+
+        <div class="flex items-end gap-2">
+          <button
+            z-button
+            [zType]="'outline'"
+            (click)="clearFilters()"
+            class="w-full"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+    </div>
 
     @if (isLoading()) {
       <div class="flex justify-center items-center h-64">
@@ -16,46 +129,48 @@
       </div>
     }
 
-    <div class="flex justify-center mt-6">
-      <z-pagination-content ariaLabel="Page navigation">
-        <z-pagination-item>
-          <z-pagination-previous class="cursor-pointer" (click)="goToPrevious()"/>
-        </z-pagination-item>
+    @if (!isLoading() && !isEmpty()) {
+      <div class="flex justify-center mt-6">
+        <z-pagination-content ariaLabel="Page navigation">
+          <z-pagination-item>
+            <z-pagination-previous class="cursor-pointer" (click)="goToPrevious()"/>
+          </z-pagination-item>
 
-        @for (page of pages(); track page) {
-          @if (page === 1) {
-            <z-pagination-item>
-              <z-pagination-button class="cursor-pointer" [zActive]="page === currentPage()" (click)="goToPage(page)">
-                {{ page }}
-              </z-pagination-button>
-            </z-pagination-item>
-          } @else if (page === 2 && currentPage() > 4) {
-            <z-pagination-item>
-              <z-pagination-ellipsis/>
-            </z-pagination-item>
-          } @else if (page >= currentPage() - 2 && page <= currentPage() + 2) {
-            <z-pagination-item>
-              <z-pagination-button class="cursor-pointer" [zActive]="page === currentPage()" (click)="goToPage(page)">
-                {{ page }}
-              </z-pagination-button>
-            </z-pagination-item>
-          } @else if (page === totalPages() - 1 && currentPage() < totalPages() - 3) {
-            <z-pagination-item>
-              <z-pagination-ellipsis/>
-            </z-pagination-item>
-          } @else if (page === totalPages()) {
-            <z-pagination-item>
-              <z-pagination-button class="cursor-pointer" [zActive]="page === currentPage()" (click)="goToPage(page)">
-                {{ page }}
-              </z-pagination-button>
-            </z-pagination-item>
+          @for (page of pages(); track page) {
+            @if (page === 1) {
+              <z-pagination-item>
+                <z-pagination-button class="cursor-pointer" [zActive]="page === currentPage()" (click)="goToPage(page)">
+                  {{ page }}
+                </z-pagination-button>
+              </z-pagination-item>
+            } @else if (page === 2 && currentPage() > 4) {
+              <z-pagination-item>
+                <z-pagination-ellipsis/>
+              </z-pagination-item>
+            } @else if (page >= currentPage() - 2 && page <= currentPage() + 2) {
+              <z-pagination-item>
+                <z-pagination-button class="cursor-pointer" [zActive]="page === currentPage()" (click)="goToPage(page)">
+                  {{ page }}
+                </z-pagination-button>
+              </z-pagination-item>
+            } @else if (page === totalPages() - 1 && currentPage() < totalPages() - 3) {
+              <z-pagination-item>
+                <z-pagination-ellipsis/>
+              </z-pagination-item>
+            } @else if (page === totalPages()) {
+              <z-pagination-item>
+                <z-pagination-button class="cursor-pointer" [zActive]="page === currentPage()" (click)="goToPage(page)">
+                  {{ page }}
+                </z-pagination-button>
+              </z-pagination-item>
+            }
           }
-        }
 
-        <z-pagination-item>
-          <z-pagination-next class="cursor-pointer" (click)="goToNext()"/>
-        </z-pagination-item>
-      </z-pagination-content>
-    </div>
+          <z-pagination-item>
+            <z-pagination-next class="cursor-pointer" (click)="goToNext()"/>
+          </z-pagination-item>
+        </z-pagination-content>
+      </div>
+    }
   </div>
 </app-layout>
