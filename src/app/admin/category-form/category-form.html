@@ -1,0 +1,146 @@
+<app-admin-layout>
+  <div class="max-w-3xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+      <div>
+        <h1 class="text-3xl font-bold">
+          {{ isEditMode() ? 'Edit Category' : 'Create New Category' }}
+        </h1>
+        <p class="text-muted-foreground mt-1">
+          {{ isEditMode() ? 'Update category information' : 'Add a new category to organize products' }}
+        </p>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
+        <z-icon zType="alert-circle" class="text-destructive"></z-icon>
+        <span class="text-destructive">{{ errorMessage() }}</span>
+      </div>
+    }
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-96">
+        <z-loader/>
+      </div>
+    } @else {
+      <!-- Form -->
+      <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="bg-card border border-border rounded-lg p-6">
+        <div class="space-y-6">
+          <!-- Name Field -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Category Name <span class="text-destructive">*</span>
+            </label>
+            <input
+              z-input
+              type="text"
+              formControlName="name"
+              placeholder="Enter category name"
+              [class.border-destructive]="isFieldInvalid('name')"
+              class="w-full"
+            />
+            @if (getFieldError('name')) {
+              <p class="text-destructive text-sm mt-1">{{ getFieldError('name') }}</p>
+            }
+          </div>
+
+          <!-- Description Field -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Description
+            </label>
+            <textarea
+              z-input
+              formControlName="description"
+              placeholder="Enter category description (optional)"
+              rows="4"
+              class="w-full"
+            ></textarea>
+            <p class="text-sm text-muted-foreground mt-1">
+              A brief description to help identify this category
+            </p>
+          </div>
+
+          <!-- Parent Category Field -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Parent Category
+            </label>
+            @if (!isLoadingCategories()) {
+              <z-select
+                [placeholder]="'Select parent category (optional)'"
+                [(ngModel)]="selectedParent"
+                [ngModelOptions]="{standalone: true}"
+                (selectionChange)="onParentChange($event)"
+                class="w-full"
+              >
+                <z-select-item value="none">No Parent (Root Category)</z-select-item>
+                @for (category of categories(); track category.id) {
+                  @if (!isEditMode() || category.id !== categoryId) {
+                    <z-select-item [value]="category.id.toString()">
+                      {{ category.name }}
+                    </z-select-item>
+                  }
+                }
+              </z-select>
+            } @else {
+              <input z-input type="text" placeholder="Loading categories..." disabled class="w-full" />
+            }
+            <p class="text-sm text-muted-foreground mt-1">
+              Select a parent to create a subcategory, or leave as root category
+            </p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-4 pt-6 border-t">
+            <button
+              z-button
+              type="submit"
+              zType="default"
+              [disabled]="isSubmitting()"
+              class="flex-1"
+            >
+              @if (isSubmitting()) {
+                <z-loader class="mr-2"></z-loader>
+                {{ isEditMode() ? 'Updating...' : 'Creating...' }}
+              } @else {
+                <z-icon zType="save" class="mr-2"></z-icon>
+                {{ isEditMode() ? 'Update Category' : 'Create Category' }}
+              }
+            </button>
+            <button
+              z-button
+              type="button"
+              zType="outline"
+              (click)="cancel()"
+              [disabled]="isSubmitting()"
+            >
+              <z-icon zType="x" class="mr-2"></z-icon>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Info Card -->
+      <div class="bg-muted border border-border rounded-lg p-6">
+        <h3 class="font-semibold mb-2 flex items-center gap-2">
+          <z-icon zType="info"></z-icon>
+          Category Hierarchy
+        </h3>
+        <ul class="space-y-2 text-sm text-muted-foreground">
+          <li class="flex items-start gap-2">
+            <span class="font-semibold text-foreground min-w-32">Root Category:</span>
+            <span>A top-level category without a parent. Use for main product groups.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="font-semibold text-foreground min-w-32">Subcategory:</span>
+            <span>A category with a parent. Use to further organize products within a main category.</span>
+          </li>
+        </ul>
+      </div>
+    }
+  </div>
+</app-admin-layout>
+

@@ -1,0 +1,188 @@
+<app-admin-layout>
+  <div class="max-w-3xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+      <div>
+        <h1 class="text-3xl font-bold">
+          {{ isEditMode() ? 'Edit User' : 'Create New User' }}
+        </h1>
+        <p class="text-muted-foreground mt-1">
+          {{ isEditMode() ? 'Update user information and role' : 'Add a new user to the system' }}
+        </p>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
+        <z-icon zType="alert-circle" class="text-destructive"></z-icon>
+        <span class="text-destructive">{{ errorMessage() }}</span>
+      </div>
+    }
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-96">
+        <z-loader/>
+      </div>
+    } @else {
+      <!-- Form -->
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="bg-card border border-border rounded-lg p-6">
+        <div class="space-y-6">
+          <!-- Name Field -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Name <span class="text-destructive">*</span>
+            </label>
+            <input
+              z-input
+              type="text"
+              formControlName="name"
+              placeholder="Enter user's full name"
+              [class.border-destructive]="isFieldInvalid('name')"
+              class="w-full"
+            />
+            @if (getFieldError('name')) {
+              <p class="text-destructive text-sm mt-1">{{ getFieldError('name') }}</p>
+            }
+          </div>
+
+          <!-- Email Field -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Email <span class="text-destructive">*</span>
+            </label>
+            <input
+              z-input
+              type="email"
+              formControlName="email"
+              placeholder="user@example.com"
+              [class.border-destructive]="isFieldInvalid('email')"
+              class="w-full"
+            />
+            @if (getFieldError('email')) {
+              <p class="text-destructive text-sm mt-1">{{ getFieldError('email') }}</p>
+            }
+          </div>
+
+          <!-- Role Field -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Role <span class="text-destructive">*</span>
+            </label>
+            <z-select
+              [placeholder]="'Select role'"
+              [(ngModel)]="selectedRole"
+              [ngModelOptions]="{standalone: true}"
+              (selectionChange)="onRoleChange($event)"
+              class="w-full"
+            >
+              <z-select-item value="user">User</z-select-item>
+              <z-select-item value="admin">Admin</z-select-item>
+            </z-select>
+            @if (getFieldError('role')) {
+              <p class="text-destructive text-sm mt-1">{{ getFieldError('role') }}</p>
+            }
+          </div>
+
+          <!-- Password Section -->
+          <div class="border-t pt-6">
+            <h3 class="text-lg font-semibold mb-4">
+              {{ isEditMode() ? 'Change Password (Optional)' : 'Password' }}
+            </h3>
+
+            @if (!isEditMode()) {
+              <p class="text-sm text-muted-foreground mb-4">
+                Password must be at least 8 characters long.
+              </p>
+            } @else {
+              <p class="text-sm text-muted-foreground mb-4">
+                Leave blank to keep the current password.
+              </p>
+            }
+
+            <div class="space-y-4">
+              <!-- Password Field -->
+              <div>
+                <label class="block text-sm font-medium mb-2">
+                  Password @if (!isEditMode()) {<span class="text-destructive">*</span>}
+                </label>
+                <input
+                  z-input
+                  type="password"
+                  formControlName="password"
+                  placeholder="Enter password"
+                  [class.border-destructive]="isFieldInvalid('password')"
+                  class="w-full"
+                />
+                @if (getFieldError('password')) {
+                  <p class="text-destructive text-sm mt-1">{{ getFieldError('password') }}</p>
+                }
+              </div>
+
+              <!-- Password Confirmation Field -->
+              <div>
+                <label class="block text-sm font-medium mb-2">
+                  Confirm Password
+                </label>
+                <input
+                  z-input
+                  type="password"
+                  formControlName="password_confirmation"
+                  placeholder="Confirm password"
+                  class="w-full"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-4 pt-6 border-t">
+            <button
+              z-button
+              type="submit"
+              zType="default"
+              [disabled]="isSubmitting()"
+              class="flex-1"
+            >
+              @if (isSubmitting()) {
+                <z-loader class="mr-2"></z-loader>
+                {{ isEditMode() ? 'Updating...' : 'Creating...' }}
+              } @else {
+                <z-icon zType="save" class="mr-2"></z-icon>
+                {{ isEditMode() ? 'Update User' : 'Create User' }}
+              }
+            </button>
+            <button
+              z-button
+              type="button"
+              zType="outline"
+              (click)="cancel()"
+              [disabled]="isSubmitting()"
+            >
+              <z-icon zType="x" class="mr-2"></z-icon>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Info Card -->
+      <div class="bg-muted border border-border rounded-lg p-6">
+        <h3 class="font-semibold mb-2 flex items-center gap-2">
+          <z-icon zType="info"></z-icon>
+          User Roles
+        </h3>
+        <ul class="space-y-2 text-sm text-muted-foreground">
+          <li class="flex items-start gap-2">
+            <span class="font-semibold text-foreground min-w-16">User:</span>
+            <span>Regular user with access to the store and their own orders.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="font-semibold text-foreground min-w-16">Admin:</span>
+            <span>Full access to all admin features including user management, products, orders, and payments.</span>
+          </li>
+        </ul>
+      </div>
+    }
+  </div>
+</app-admin-layout>
+

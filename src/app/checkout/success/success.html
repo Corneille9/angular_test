@@ -1,0 +1,73 @@
+<app-layout>
+  <div layoutMain class="p-6 max-w-2xl mx-auto">
+    @if (isVerifying()) {
+      <div class="text-center py-12">
+        <z-loader/>
+        <p class="text-lg text-muted-foreground mt-4">Verifying your payment...</p>
+      </div>
+    } @else if (isSuccess()) {
+      <div class="bg-background shadow rounded-2xl p-8 text-center">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="icon-check text-3xl text-green-600"></i>
+        </div>
+
+        <h1 class="text-3xl font-bold mb-2">Payment Successful!</h1>
+        <p class="text-muted-foreground mb-6">
+          Thank you for your purchase. Your order has been confirmed.
+        </p>
+
+        @if (orderId()) {
+          <div class="bg-muted/50 rounded-lg p-4 mb-6">
+            <p class="text-sm text-muted-foreground mb-1">Order ID</p>
+            <p class="font-mono font-semibold text-lg">#{{ orderId() }}</p>
+          </div>
+        }
+
+        <div class="flex gap-4 justify-center">
+          <button
+            z-button
+            zType="default"
+            (click)="goToOrders()"
+          >
+            View My Orders
+          </button>
+          <button
+            z-button
+            zType="outline"
+            (click)="continueShopping()"
+          >
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="bg-background shadow rounded-2xl p-8 text-center">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="icon-x text-3xl text-red-600"></i>
+        </div>
+
+        <h1 class="text-3xl font-bold mb-2">Payment Verification Failed</h1>
+        <p class="text-muted-foreground mb-6">
+          {{ errorMessage() || 'We could not verify your payment. Please contact support.' }}
+        </p>
+
+        <div class="flex gap-4 justify-center">
+          <button
+            z-button
+            zType="default"
+            (click)="checkPayment()"
+          >
+            Try Again
+          </button>
+          <button
+            z-button
+            zType="outline"
+            (click)="continueShopping()"
+          >
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</app-layout>

@@ -1,0 +1,238 @@
+<app-admin-layout>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">Categories Management</h1>
+        <p class="text-muted-foreground mt-1">Organize products with categories</p>
+      </div>
+      <button
+        z-button
+        zType="default"
+        (click)="addNewCategory()"
+        class="flex items-center gap-2"
+      >
+        <z-icon zType="plus" class="mr-2"></z-icon>
+        Add Category
+      </button>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
+        <z-icon zType="alert-circle" class="text-destructive"></z-icon>
+        <span class="text-destructive">{{ errorMessage() }}</span>
+        <button
+          class="ml-auto px-3 py-1 text-sm border rounded hover:bg-accent"
+          (click)="loadCategories()"
+        >
+          Retry
+        </button>
+      </div>
+    }
+
+    <!-- Filters Section -->
+    <div class=" border border-border rounded-lg p-6">
+      <h2 class="text-lg font-semibold mb-4">Filters</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Search -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Search</label>
+          <input
+            z-input
+            type="text"
+            placeholder="Search categories..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchInput()"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Sort By -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Sort By</label>
+          <z-select
+            [placeholder]="'Default'"
+            [(ngModel)]="selectedSort"
+            (selectionChange)="onSortChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="default">Newest First</z-select-item>
+            <z-select-item value="created_at_asc">Oldest First</z-select-item>
+            <z-select-item value="name_asc">Name: A to Z</z-select-item>
+            <z-select-item value="name_desc">Name: Z to A</z-select-item>
+          </z-select>
+        </div>
+
+        <!-- Clear Filters -->
+        <div class="flex items-end">
+          <button
+            z-button
+            [zType]="'outline'"
+            (click)="clearFilters()"
+            class="w-full"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-96">
+        <z-loader/>
+      </div>
+    } @else if (categories().length === 0) {
+      <div class="border rounded-lg p-12 text-center">
+        <z-icon zType="folder" class="text-6xl text-muted-foreground mb-4 mx-auto"></z-icon>
+        <h3 class="text-xl font-semibold mb-2">No categories found</h3>
+        <p class="text-muted-foreground mb-6">Get started by creating your first category</p>
+        <button z-button zType="default" (click)="addNewCategory()">
+          <z-icon zType="plus" class="mr-2"></z-icon>
+          Add Your First Category
+        </button>
+      </div>
+    } @else {
+      <!-- Categories Table -->
+      <div class="overflow-hidden rounded-md border">
+        <table z-table>
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head class="w-16">ID</th>
+              <th z-table-head>Name</th>
+              <th z-table-head>Description</th>
+              <th z-table-head class="text-center">Parent</th>
+              <th z-table-head class="text-center">Products</th>
+              <th z-table-head>Created At</th>
+              <th z-table-head class="w-32">Actions</th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (category of categories(); track category.id) {
+              <tr z-table-row>
+                <!-- ID -->
+                <td z-table-cell>
+                  <div class="font-medium">#{{ category.id }}</div>
+                </td>
+
+                <!-- Name -->
+                <td z-table-cell>
+                  <div class="font-medium">{{ category.name }}</div>
+                </td>
+
+                <!-- Description -->
+                <td z-table-cell>
+                  <div class="max-w-md">
+                    @if (category.description) {
+                      <div class="text-sm line-clamp-2">{{ category.description }}</div>
+                    } @else {
+                      <span class="text-muted-foreground text-sm">No description</span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Parent -->
+                <td z-table-cell>
+                  <div class="text-center text-sm">
+                    @if (category.parent_id) {
+                      <z-badge zType="outline">Parent: #{{ category.parent_id }}</z-badge>
+                    } @else {
+                      <z-badge zType="default">Root</z-badge>
+                    }
+                  </div>
+                </td>
+
+                <!-- Products Count -->
+                <td z-table-cell>
+                  <div class="text-center font-medium">
+                    {{ category.products_count || 0 }}
+                  </div>
+                </td>
+
+                <!-- Created At -->
+                <td z-table-cell>
+                  <div class="text-sm">{{ formatDate(category.created_at) }}</div>
+                </td>
+
+                <!-- Actions -->
+                <td z-table-cell>
+                  <div class="flex items-center gap-2">
+                    <button
+                      z-button
+                      zType="ghost"
+                      (click)="editCategory(category)"
+                      title="Edit category"
+                    >
+                      <z-icon zType="square-pen"></z-icon>
+                    </button>
+                    <button
+                      z-button
+                      zType="ghost"
+                      (click)="deleteCategory(category)"
+                      title="Delete category"
+                      class="text-destructive hover:text-destructive"
+                    >
+                      <z-icon zType="trash-2"></z-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr z-table-row>
+                <td z-table-cell [attr.colspan]="7" class="h-24 text-center">
+                  <div class="flex flex-col items-center gap-2">
+                    <z-icon zType="search" class="text-4xl text-muted-foreground"></z-icon>
+                    <span class="text-muted-foreground">No categories found matching your filters.</span>
+                    <button
+                      z-button
+                      zType="outline"
+                      zSize="sm"
+                      (click)="clearFilters()"
+                      class="mt-2"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Results count and pagination -->
+      <div class="flex items-center justify-between text-sm text-muted-foreground">
+        <div>
+          Showing {{ categories().length }} categories (Page {{ currentPage() }} of {{ totalPages() }})
+        </div>
+
+        @if (totalPages() > 1) {
+          <div class="flex items-center gap-2">
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              [disabled]="currentPage() === 1"
+              (click)="loadCategories(currentPage() - 1)"
+            >
+              <z-icon zType="chevron-left"></z-icon>
+            </button>
+            <span class="text-sm">
+              Page {{ currentPage() }} of {{ totalPages() }}
+            </span>
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              [disabled]="currentPage() === totalPages()"
+              (click)="loadCategories(currentPage() + 1)"
+            >
+              <z-icon zType="chevron-right"></z-icon>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</app-admin-layout>
+

@@ -35,9 +35,9 @@ export class Register {
 
   constructor() {
     this.registerForm = new FormGroup({
-      name: new FormControl('Ange', [Validators.required, Validators.min(3)]),
-      email: new FormControl('ange@gmail.com', [Validators.required, Validators.min(3)]),
-      password: new FormControl('ange@gmail.com', [Validators.required]),
+      name: new FormControl('', [Validators.required, Validators.min(3)]),
+      email: new FormControl('', [Validators.required, Validators.min(3)]),
+      password: new FormControl('', [Validators.required]),
     });
   }
 
@@ -53,17 +53,20 @@ export class Register {
       console.log("Registering in...")
       this.isLoading.set(true);
 
-      const success = await this.authService.register({
+      const result = await this.authService.register({
         name: this.registerForm.value.name,
         email: this.registerForm.value.email,
         password: this.registerForm.value.password,
         password_confirmation: this.registerForm.value.password
       });
 
-      if (success) this.router.navigate(['/login']);
-    } catch (e) {
+      if (result.success) {
+        this.router.navigate(['/auth/verify-email']);
+      }
+    } catch (e: any) {
       console.error(e);
-      this.errorMessage.set("An error occurred. Please try again");
+      const errorMsg = e?.error?.message || e?.error?.errors || "An error occurred. Please try again";
+      this.errorMessage.set(errorMsg);
     } finally {
       this.isLoading.set(false);
     }

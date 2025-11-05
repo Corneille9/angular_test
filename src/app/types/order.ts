@@ -19,7 +19,7 @@ export interface Order {
   user_id: number;
   user?: User;
   total: number;
-  status: OrderStatus;
+  status: OrderStatus | string;
   items?: OrderItem[];
   items_count?: number;
   created_at: string | null;
@@ -28,7 +28,7 @@ export interface Order {
 
 // Order Request Types
 export interface UpdateOrderRequest {
-  status: OrderStatus;
+  status: OrderStatus | string;
 }
 
 // Order Statistics

@@ -6,6 +6,7 @@ export interface User {
   email: string;
   role: UserRole;
   orders_count?: number;
+  has_verified_email: boolean;
   created_at: string | null;
   updated_at: string | null;
 }

@@ -1,84 +1,347 @@
-<app-layout>
-<!--  <div layoutMain class="p-6">-->
-<!--    <div class="flex justify-between items-center mb-6">-->
-<!--      <h1 class="text-3xl font-bold">Products Management</h1>-->
-<!--      <button z-button zType="default" (click)="addNewProduct()">-->
-<!--        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>-->
-<!--        </svg>-->
-<!--        Add Product-->
-<!--      </button>-->
-<!--    </div>-->
+<app-admin-layout>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">Products Management</h1>
+        <p class="text-muted-foreground mt-1">Manage your product inventory</p>
+      </div>
+      <button
+        z-button
+        zType="default"
+        (click)="addNewProduct()"
+        class="flex items-center gap-2"
+      >
+        <z-icon zType="plus" class="mr-2"></z-icon>
+        Add Product
+      </button>
+    </div>
 
-<!--    @if (isLoading()) {-->
-<!--      <div class="flex justify-center items-center h-64">-->
-<!--        <z-loader/>-->
-<!--      </div>-->
-<!--    } @else {-->
-<!--      <z-card class="overflow-hidden">-->
-<!--        <div class="overflow-x-auto">-->
-<!--          <table class="w-full">-->
-<!--            <thead class="bg-gray-50">-->
-<!--            <tr>-->
-<!--              @for (col of columns; track col.key) {-->
-<!--                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">-->
-<!--                  {{ col.label }}-->
-<!--                </th>-->
-<!--              }-->
-<!--            </tr>-->
-<!--            </thead>-->
-<!--            <tbody class="bg-white divide-y divide-gray-200">-->
-<!--              @for (product of products(); track product.id) {-->
-<!--                <tr class="hover:bg-gray-50 transition-colors">-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-->
-<!--                    {{ product.id }}-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap">-->
-<!--                    <img [src]="product.image" [alt]="product.name" class="w-12 h-12 object-contain rounded">-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 text-sm text-gray-900">-->
-<!--                    <div class="line-clamp-2">{{ product.name }}</div>-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap">-->
-<!--                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">-->
-<!--                      {{ product.category }}-->
-<!--                    </span>-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">-->
-<!--                    ${{ product.price }}-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap text-sm">-->
-<!--                    <div class="flex gap-2">-->
-<!--                      <button-->
-<!--                        z-button-->
-<!--                        zType="default"-->
-<!--                        zSize="sm"-->
-<!--                        (click)="editProduct(product)"-->
-<!--                        class="text-blue-600 hover:text-blue-800">-->
-<!--                        Edit-->
-<!--                      </button>-->
-<!--                      <button-->
-<!--                        z-button-->
-<!--                        zType="destructive"-->
-<!--                        zSize="sm"-->
-<!--                        (click)="deleteProduct(product)"-->
-<!--                        class="text-red-600 hover:text-red-800">-->
-<!--                        Delete-->
-<!--                      </button>-->
-<!--                    </div>-->
-<!--                  </td>-->
-<!--                </tr>-->
-<!--              } @empty {-->
-<!--                <tr>-->
-<!--                  <td colspan="6" class="px-6 py-12 text-center text-gray-500">-->
-<!--                    No products found. Add your first product!-->
-<!--                  </td>-->
-<!--                </tr>-->
-<!--              }-->
-<!--            </tbody>-->
-<!--          </table>-->
-<!--        </div>-->
-<!--      </z-card>-->
-<!--    }-->
-<!--  </div>-->
-</app-layout>
+    @if (errorMessage()) {
+      <div class="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
+        <z-icon zType="alert-circle" class="text-destructive"></z-icon>
+        <span class="text-destructive">{{ errorMessage() }}</span>
+        <button
+          class="ml-auto px-3 py-1 text-sm border rounded hover:bg-accent"
+          (click)="loadProducts()"
+        >
+          Retry
+        </button>
+      </div>
+    }
+
+    <!-- Filters Section -->
+    <div class=" border border-border rounded-lg p-6">
+      <h2 class="text-lg font-semibold mb-4">Filters</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <!-- Search -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Search</label>
+          <input
+            z-input
+            type="text"
+            placeholder="Search products..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchInput()"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Category Filter -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Category</label>
+          @if (!isLoadingCategories()) {
+            <z-select
+              [placeholder]="'All Categories'"
+              [(ngModel)]="selectedCategory"
+              (selectionChange)="onCategoryChange($event)"
+              class="w-full"
+            >
+              <z-select-item value="all">All Categories</z-select-item>
+              @for (category of categories(); track category.id) {
+                <z-select-item [value]="category.id.toString()">
+                  {{ category.name }}
+                </z-select-item>
+              }
+            </z-select>
+          } @else {
+            <input z-input type="text" placeholder="Loading..." disabled class="w-full"/>
+          }
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Status</label>
+          <z-select
+            [placeholder]="'All Status'"
+            [(ngModel)]="statusFilter"
+            (selectionChange)="onStatusChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="all">All Status</z-select-item>
+            <z-select-item value="active">Active</z-select-item>
+            <z-select-item value="inactive">Inactive</z-select-item>
+          </z-select>
+        </div>
+
+        <!-- Stock Filter -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Stock Level</label>
+          <z-select
+            [placeholder]="'All Stock'"
+            [(ngModel)]="stockFilter"
+            (selectionChange)="onStockChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="all">All Stock</z-select-item>
+            <z-select-item value="in-stock">In Stock</z-select-item>
+            <z-select-item value="low-stock">Low Stock</z-select-item>
+            <z-select-item value="out-of-stock">Out of Stock</z-select-item>
+          </z-select>
+        </div>
+      </div>
+
+      <!-- Second Row: Price Range, Sort, and Options -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Min Price -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Min Price</label>
+          <input
+            z-input
+            type="number"
+            placeholder="0"
+            [(ngModel)]="minPrice"
+            (change)="applyFilters()"
+            min="0"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Max Price -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Max Price</label>
+          <input
+            z-input
+            type="number"
+            placeholder="9999"
+            [(ngModel)]="maxPrice"
+            (change)="applyFilters()"
+            min="0"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Sort By -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Sort By</label>
+          <z-select
+            [placeholder]="'Default'"
+            [(ngModel)]="selectedSort"
+            (selectionChange)="onSortChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="default">Default</z-select-item>
+            <z-select-item value="price_asc">Price: Low to High</z-select-item>
+            <z-select-item value="price_desc">Price: High to Low</z-select-item>
+            <z-select-item value="name_asc">Name: A to Z</z-select-item>
+            <z-select-item value="name_desc">Name: Z to A</z-select-item>
+            <z-select-item value="created_at_desc">Newest First</z-select-item>
+            <z-select-item value="created_at_asc">Oldest First</z-select-item>
+          </z-select>
+        </div>
+
+        <!-- In Stock Only & Clear Filters -->
+        <div class="flex flex-col items-end justify-end mb-1">
+          <div class=""></div>
+          <button
+            z-button
+            [zType]="'destructive'"
+            (click)="clearFilters()"
+            class="w-full"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-96">
+        <z-loader/>
+      </div>
+    } @else if (products().length === 0) {
+      <div class="border rounded-lg p-12 text-center">
+        <z-icon zType="package" class="text-6xl text-muted-foreground mb-4 mx-auto"></z-icon>
+        <h3 class="text-xl font-semibold mb-2">No products yet</h3>
+        <p class="text-muted-foreground mb-6">Get started by creating your first product</p>
+        <button z-button zType="default" (click)="addNewProduct()">
+          <z-icon zType="plus" class="mr-2"></z-icon>
+          Add Your First Product
+        </button>
+      </div>
+    } @else {
+      <!-- Products Table -->
+      <div class="overflow-hidden rounded-md border">
+        <table z-table>
+          <thead z-table-header>
+          <tr z-table-row>
+            <th z-table-head class="w-20">Image</th>
+            <th z-table-head>Product</th>
+            <th z-table-head>Categories</th>
+            <th z-table-head class="text-right">Price</th>
+            <th z-table-head class="text-center">Stock</th>
+            <th z-table-head class="text-center">Status</th>
+            <th z-table-head class="w-32">Actions</th>
+          </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (product of products(); track product.id) {
+              <tr z-table-row>
+                <!-- Image -->
+                <td z-table-cell>
+                  <div class="w-12 h-12 rounded overflow-hidden bg-muted">
+                    <img
+                      [src]="getImageUrl(product.image)"
+                      [alt]="product.name"
+                      class="w-full h-full object-cover"
+                      (error)="$any($event.target).src = 'https://placehold.co/600x400'"
+                    />
+                  </div>
+                </td>
+
+                <!-- Product Name & Description -->
+                <td z-table-cell>
+                  <div class="max-w-md">
+                    <div class="font-medium">{{ product.name }}</div>
+                    @if (product.description) {
+                      <div class="text-sm text-muted-foreground line-clamp-1 max-w-xs">
+                        {{ product.description }}
+                      </div>
+                    }
+                  </div>
+                </td>
+
+                <!-- Categories -->
+                <td z-table-cell>
+                  @if (product.categories && product.categories.length > 0) {
+                    <div class="flex flex-wrap gap-1 max-w-xs">
+                      @for (category of product.categories.slice(0, 2); track category.id) {
+                        <span class="text-xs px-2 py-1 bg-muted rounded">
+                          {{ category.name }}
+                        </span>
+                      }
+                      @if (product.categories.length > 2) {
+                        <span class="text-xs px-2 py-1 bg-muted rounded">
+                          +{{ product.categories.length - 2 }}
+                        </span>
+                      }
+                    </div>
+                  } @else {
+                    <span class="text-sm text-muted-foreground">No categories</span>
+                  }
+                </td>
+
+                <!-- Price -->
+                <td z-table-cell>
+                  <div class="text-right font-medium">{{ formatPrice(product.price) }}</div>
+                </td>
+
+                <!-- Stock -->
+                <td z-table-cell>
+                  <div class="flex flex-col items-center gap-1">
+                    <span class="text-sm">{{ product.stock }} units</span>
+                  </div>
+                </td>
+
+                <!-- Status -->
+                <td z-table-cell>
+                  <div class="flex justify-center">
+                    <z-badge [zType]="getStatusBadgeType(product.is_active)">
+                      {{ product.is_active === 1 ? 'Active' : 'Inactive' }}
+                    </z-badge>
+                  </div>
+                </td>
+
+                <!-- Actions -->
+                <td z-table-cell>
+                  <div class="flex items-center gap-2">
+                    <button
+                      z-button
+                      zType="ghost"
+                      (click)="editProduct(product)"
+                      title="Edit product"
+                    >
+                      <z-icon zType="square-pen"></z-icon>
+                    </button>
+                    <button
+                      z-button
+                      zType="ghost"
+                      (click)="deleteProduct(product)"
+                      title="Delete product"
+                      class="text-destructive hover:text-destructive"
+                    >
+                      <z-icon zType="trash-2"></z-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr z-table-row>
+                <td z-table-cell [attr.colspan]="7" class="h-24 text-center">
+                  <div class="flex flex-col items-center gap-2">
+                    <z-icon zType="search" class="text-4xl text-muted-foreground"></z-icon>
+                    <span class="text-muted-foreground">No products found matching your filters.</span>
+                    <button
+                      z-button
+                      zType="outline"
+                      zSize="sm"
+                      (click)="clearFilters()"
+                      class="mt-2"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Results count -->
+      <div class="flex items-center justify-between text-sm text-muted-foreground">
+        <div>
+          Showing {{ products().length }} products (Page {{ currentPage() }} of {{ totalPages() }})
+        </div>
+
+        @if (totalPages() > 1) {
+          <div class="flex items-center gap-2">
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              [disabled]="currentPage() === 1"
+              (click)="loadProducts(currentPage() - 1)"
+            >
+              <z-icon zType="chevron-left"></z-icon>
+            </button>
+            <span class="text-sm">
+              Page {{ currentPage() }} of {{ totalPages() }}
+            </span>
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              [disabled]="currentPage() === totalPages()"
+              (click)="loadProducts(currentPage() + 1)"
+            >
+              <z-icon zType="chevron-right"></z-icon>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</app-admin-layout>
+

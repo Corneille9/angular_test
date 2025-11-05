@@ -1,0 +1,116 @@
+<z-layout class="border rounded-md overflow-hidden">
+  <z-sidebar [zWidth]="250" [zCollapsible]="true" [zCollapsed]="sidebarCollapsed()" [zCollapsedWidth]="70" (zCollapsedChange)="onCollapsedChange($event)" class="!p-0">
+    <nav [class]="'flex flex-col h-full overflow-hidden ' + (sidebarCollapsed() ? 'gap-1 p-1 pt-4' : 'gap-4 p-4')">
+      <z-sidebar-group>
+        @if (!sidebarCollapsed()) {
+          <z-sidebar-group-label>Main Menu</z-sidebar-group-label>
+        }
+        @for (item of mainMenuItems; track item.label) {
+          <button
+            z-button
+            [zType]="item.url == router.url ? 'secondary' : 'ghost'"
+            [class]="sidebarCollapsed() ? 'justify-center' : 'justify-start'"
+            class="cursor-pointer"
+            [routerLink]="item.url"
+          >
+            <z-icon [zType]="item.icon" [class]="sidebarCollapsed() ? '' : ' mr-2'"></z-icon>
+            @if (!sidebarCollapsed()) {
+              <span>{{ item.label }}</span>
+            }
+          </button>
+        }
+      </z-sidebar-group>
+
+      <z-sidebar-group>
+        @if (!sidebarCollapsed()) {
+          <z-sidebar-group-label>Management</z-sidebar-group-label>
+        }
+        @for (item of workspaceMenuItems; track item.label) {
+          <button
+            z-button
+            [zType]="item.url == router.url ? 'secondary' : 'ghost'"
+            [class]="sidebarCollapsed() ? 'justify-center' : 'justify-start'"
+            class="cursor-pointer"
+            [routerLink]="item.url"
+          >
+            <z-icon [zType]="item.icon" [class]="sidebarCollapsed() ? '' : ' mr-2'"></z-icon>
+            @if (!sidebarCollapsed()) {
+              <span>{{ item.label }}</span>
+            }
+          </button>
+        }
+      </z-sidebar-group>
+
+      <div class="mt-auto">
+        <div
+          z-menu
+          [zMenuTriggerFor]="userMenu"
+          zPlacement="rightBottom"
+          [class]="'flex items-center justify-center gap-2 cursor-pointer rounded-md hover:bg-accent ' + (sidebarCollapsed() ? 'p-0 m-2' : 'p-2')"
+        >
+          <z-avatar zSrc="https://zardui.com/images/avatar/imgs/avatar_image.jpg" zAlt="Admin User"/>
+
+          @if (!sidebarCollapsed()) {
+            <div>
+              <span class="font-medium">Admin</span>
+              <div class="text-xs text-muted-foreground">{{ 'admin@example.com' }}</div>
+            </div>
+
+            <z-icon zType="chevrons-up-down" class="ml-auto"/>
+          }
+        </div>
+
+        <ng-template #userMenu>
+          <div z-menu-content class="w-48">
+            <button z-menu-item routerLink="/">
+              <z-icon zType="house" class="mr-2"/>
+              Home
+            </button>
+            <button z-menu-item>
+              <z-icon zType="user" class="mr-2"/>
+              Profile
+            </button>
+            <button z-menu-item routerLink="/admin/settings">
+              <z-icon zType="settings" class="mr-2"/>
+              Settings
+            </button>
+            <z-divider zSpacing="sm"/>
+            <button z-menu-item (click)="logout()">
+              <z-icon zType="log-out" class="mr-2"/>
+              Logout
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    </nav>
+  </z-sidebar>
+
+  <z-content class="min-h-screen">
+    <div class="flex items-center mb-4">
+      <button z-button zType="ghost" zSize="sm" class="-ml-2" (click)="toggleSidebar()">
+        <z-icon zType="panel-left"/>
+      </button>
+
+      <z-divider zOrientation="vertical" class="h-4 ml-2"/>
+
+      <z-breadcrumb>
+        <z-breadcrumb-item routerLink="/dashboard">Dashboard</z-breadcrumb-item>
+        <!--        <z-breadcrumb-item>-->
+        <!--          <span aria-current="page">{{ currentPage() }}</span>-->
+        <!--        </z-breadcrumb-item>-->
+      </z-breadcrumb>
+
+      <z-button (click)="toggleTheme()" zType="ghost" class="cursor-pointer size-8" size="icon" [attr.aria-label]="getCurrentTheme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+        @if (getCurrentTheme() === 'dark') {
+          ☀️
+        } @else {
+          🌙
+        }
+      </z-button>
+    </div>
+
+    <div class="p-6">
+      <ng-content/>
+    </div>
+  </z-content>
+</z-layout>

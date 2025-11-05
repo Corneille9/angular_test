@@ -1,0 +1,264 @@
+<app-admin-layout>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">Users Management</h1>
+        <p class="text-muted-foreground mt-1">Manage system users and their roles</p>
+      </div>
+      <button
+        z-button
+        zType="default"
+        (click)="addNewUser()"
+        class="flex items-center gap-2"
+      >
+        <z-icon zType="plus" class="mr-2"></z-icon>
+        Add User
+      </button>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
+        <z-icon zType="alert-circle" class="text-destructive"></z-icon>
+        <span class="text-destructive">{{ errorMessage() }}</span>
+        <button
+          class="ml-auto px-3 py-1 text-sm border rounded hover:bg-accent"
+          (click)="loadUsers()"
+        >
+          Retry
+        </button>
+      </div>
+    }
+
+    <!-- Filters Section -->
+    <div class=" border border-border rounded-lg p-6">
+      <h2 class="text-lg font-semibold mb-4">Filters</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Search -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Search</label>
+          <input
+            z-input
+            type="text"
+            placeholder="Search by name or email..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchInput()"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Role Filter -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Role</label>
+          <z-select
+            [placeholder]="'All Roles'"
+            [(ngModel)]="roleFilter"
+            (selectionChange)="onRoleChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="all">All Roles</z-select-item>
+            <z-select-item value="admin">Admin</z-select-item>
+            <z-select-item value="user">User</z-select-item>
+          </z-select>
+        </div>
+
+        <!-- Sort By -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Sort By</label>
+          <z-select
+            [placeholder]="'Default'"
+            [(ngModel)]="selectedSort"
+            (selectionChange)="onSortChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="default">Newest First</z-select-item>
+            <z-select-item value="created_at_asc">Oldest First</z-select-item>
+            <z-select-item value="name_asc">Name: A to Z</z-select-item>
+            <z-select-item value="name_desc">Name: Z to A</z-select-item>
+            <z-select-item value="email_asc">Email: A to Z</z-select-item>
+            <z-select-item value="email_desc">Email: Z to A</z-select-item>
+          </z-select>
+        </div>
+
+        <!-- Clear Filters -->
+        <div class="flex items-end">
+          <button
+            z-button
+            [zType]="'outline'"
+            (click)="clearFilters()"
+            class="w-full"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-96">
+        <z-loader/>
+      </div>
+    } @else if (users().length === 0) {
+      <div class="border rounded-lg p-12 text-center">
+        <z-icon zType="users" class="text-6xl text-muted-foreground mb-4 mx-auto"></z-icon>
+        <h3 class="text-xl font-semibold mb-2">No users found</h3>
+        <p class="text-muted-foreground mb-6">There are no users matching your filters</p>
+        <button z-button zType="outline" (click)="clearFilters()">
+          Clear Filters
+        </button>
+      </div>
+    } @else {
+      <!-- Users Table -->
+      <div class="overflow-hidden rounded-md border">
+        <table z-table>
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head class="w-16">ID</th>
+              <th z-table-head>Name</th>
+              <th z-table-head>Email</th>
+              <th z-table-head class="text-center">Role</th>
+              <th z-table-head class="text-center">Email Verified</th>
+              <th z-table-head class="text-center">Orders</th>
+              <th z-table-head>Created At</th>
+              <th z-table-head class="w-32">Actions</th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (user of users(); track user.id) {
+              <tr z-table-row>
+                <!-- ID -->
+                <td z-table-cell>
+                  <div class="font-medium">#{{ user.id }}</div>
+                </td>
+
+                <!-- Name -->
+                <td z-table-cell>
+                  <div class="font-medium">{{ user.name }}</div>
+                </td>
+
+                <!-- Email -->
+                <td z-table-cell>
+                  <div class="text-sm">{{ user.email }}</div>
+                </td>
+
+                <!-- Role -->
+                <td z-table-cell>
+                  <div class="flex justify-center">
+                    <z-badge [zType]="getRoleBadgeType(user.role)">
+                      {{ user.role }}
+                    </z-badge>
+                  </div>
+                </td>
+
+                <!-- Email Verified -->
+                <td z-table-cell>
+                  <div class="flex justify-center">
+                    @if (user.has_verified_email) {
+                      <z-badge zType="default">
+                        <z-icon zType="check" class="mr-1"></z-icon>
+                        Verified
+                      </z-badge>
+                    } @else {
+                      <z-badge zType="outline">
+                        <z-icon zType="x" class="mr-1"></z-icon>
+                        Not Verified
+                      </z-badge>
+                    }
+                  </div>
+                </td>
+
+                <!-- Orders Count -->
+                <td z-table-cell>
+                  <div class="text-center font-medium">
+                    {{ user.orders_count || 0 }}
+                  </div>
+                </td>
+
+                <!-- Created At -->
+                <td z-table-cell>
+                  <div class="text-sm">{{ formatDate(user.created_at) }}</div>
+                </td>
+
+                <!-- Actions -->
+                <td z-table-cell>
+                  <div class="flex items-center gap-2">
+                    <button
+                      z-button
+                      zType="ghost"
+                      (click)="editUser(user)"
+                      title="Edit user"
+                    >
+                      <z-icon zType="square-pen"></z-icon>
+                    </button>
+                    <button
+                      z-button
+                      zType="ghost"
+                      (click)="deleteUser(user)"
+                      title="Delete user"
+                      class="text-destructive hover:text-destructive"
+                    >
+                      <z-icon zType="trash-2"></z-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr z-table-row>
+                <td z-table-cell [attr.colspan]="8" class="h-24 text-center">
+                  <div class="flex flex-col items-center gap-2">
+                    <z-icon zType="search" class="text-4xl text-muted-foreground"></z-icon>
+                    <span class="text-muted-foreground">No users found matching your filters.</span>
+                    <button
+                      z-button
+                      zType="outline"
+                      zSize="sm"
+                      (click)="clearFilters()"
+                      class="mt-2"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Results count and pagination -->
+      <div class="flex items-center justify-between text-sm text-muted-foreground">
+        <div>
+          Showing {{ users().length }} users (Page {{ currentPage() }} of {{ totalPages() }})
+        </div>
+
+        @if (totalPages() > 1) {
+          <div class="flex items-center gap-2">
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              [disabled]="currentPage() === 1"
+              (click)="loadUsers(currentPage() - 1)"
+            >
+              <z-icon zType="chevron-left"></z-icon>
+            </button>
+            <span class="text-sm">
+              Page {{ currentPage() }} of {{ totalPages() }}
+            </span>
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              [disabled]="currentPage() === totalPages()"
+              (click)="loadUsers(currentPage() + 1)"
+            >
+              <z-icon zType="chevron-right"></z-icon>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</app-admin-layout>
+

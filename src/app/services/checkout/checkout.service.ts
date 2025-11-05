@@ -1,8 +1,8 @@
 import {inject, Injectable, signal} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {CheckoutSummaryRequest, CheckoutSummaryResponse, ConfirmPaymentRequest, ConfirmPaymentResponse, ProcessCheckoutRequest, ProcessCheckoutResponse} from '../../types';
 import {API_BASE_URL} from '../../config/api';
+import {CheckoutSummaryResponse, ProcessCheckoutRequest, ProcessCheckoutResponse, VerifyPaymentRequest, VerifyPaymentResponse} from '../../types';
 
 @Injectable({
   providedIn: 'root'
@@ -11,16 +11,25 @@ export class CheckoutService {
   isLoading = signal(false);
   private http = inject(HttpClient);
 
-  getCheckoutSummary(data: CheckoutSummaryRequest): Observable<CheckoutSummaryResponse> {
-    return this.http.post<CheckoutSummaryResponse>(`${API_BASE_URL}/checkout/summary`, data);
+  /**
+   * Get checkout summary for current user's cart
+   */
+  getCheckoutSummary(): Observable<CheckoutSummaryResponse> {
+    return this.http.get<CheckoutSummaryResponse>(`${API_BASE_URL}/checkout/summary`);
   }
 
-  processCheckout(data: ProcessCheckoutRequest): Observable<ProcessCheckoutResponse> {
+  /**
+   * Process checkout and create Stripe payment link
+   */
+  processCheckout(data: ProcessCheckoutRequest = {}): Observable<ProcessCheckoutResponse> {
     return this.http.post<ProcessCheckoutResponse>(`${API_BASE_URL}/checkout/process`, data);
   }
 
-  confirmPayment(data: ConfirmPaymentRequest): Observable<ConfirmPaymentResponse> {
-    return this.http.post<ConfirmPaymentResponse>(`${API_BASE_URL}/checkout/confirm-payment`, data);
+  /**
+   * Verify payment after Stripe redirect
+   */
+  verifyPayment(data: VerifyPaymentRequest): Observable<VerifyPaymentResponse> {
+    return this.http.post<VerifyPaymentResponse>(`${API_BASE_URL}/checkout/verify-payment`, data);
   }
 }
 

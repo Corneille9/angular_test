@@ -1,1 +1,270 @@
-<p>settings works!</p>
+<app-admin-layout>
+  <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div>
+      <h1 class="text-3xl font-bold">Settings</h1>
+      <p class="text-muted-foreground mt-1">Manage your account settings and preferences</p>
+    </div>
+
+    @if (isLoadingProfile()) {
+      <div class="flex justify-center items-center h-96">
+        <z-loader/>
+      </div>
+    } @else {
+      <!-- User Info Card -->
+      <div class="bg-card border border-border rounded-lg p-6">
+        <div class="flex items-center gap-6">
+          <!-- Avatar -->
+          <div class="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+            <span class="text-4xl font-bold text-primary">
+              {{ user()?.name ? user()!.name.charAt(0).toUpperCase() : '?' }}
+            </span>
+          </div>
+
+          <!-- User Details -->
+          <div class="flex-1">
+            <h2 class="text-2xl font-bold">{{ user()?.name }}</h2>
+            <p class="text-muted-foreground">{{ user()?.email }}</p>
+            <div class="flex gap-2 mt-2">
+              <z-badge [zType]="user()?.role === 'admin' ? 'default' : 'secondary'">
+                {{ user()?.role }}
+              </z-badge>
+              @if (user()?.has_verified_email) {
+                <z-badge zType="default">
+                  <z-icon zType="check" class="mr-1"></z-icon>
+                  Verified
+                </z-badge>
+              } @else {
+                <z-badge zType="outline">
+                  <z-icon zType="x" class="mr-1"></z-icon>
+                  Not Verified
+                </z-badge>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Info -->
+        <div class="mt-6 pt-6 border-t grid grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-muted-foreground">Member Since</div>
+            <div class="font-medium">{{ formatDate(user()?.created_at) }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-muted-foreground">Last Updated</div>
+            <div class="font-medium">{{ formatDate(user()?.updated_at) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Verification Alert -->
+      @if (!user()?.has_verified_email) {
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <div class="flex items-start gap-3">
+            <z-icon zType="triangle-alert" class="text-yellow-600 dark:text-yellow-500 mt-0.5"></z-icon>
+            <div class="flex-1">
+              <h3 class="font-semibold text-yellow-900 dark:text-yellow-100">Email Not Verified</h3>
+              <p class="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
+                Please verify your email address to access all features. Check your inbox for the verification link.
+              </p>
+              <button
+                z-button
+                zType="outline"
+                zSize="sm"
+                (click)="sendVerificationEmail()"
+                class="mt-3"
+              >
+                Resend Verification Email
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Profile Form -->
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmitProfile()" class="bg-card border border-border rounded-lg p-6">
+        <h3 class="text-xl font-semibold mb-6">Profile Information</h3>
+
+        @if (errorMessageProfile()) {
+          <div class="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3 mb-6">
+            <z-icon zType="alert-circle" class="text-destructive"></z-icon>
+            <span class="text-destructive">{{ errorMessageProfile() }}</span>
+          </div>
+        }
+
+        <div class="space-y-6">
+          <!-- Name Field -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Full Name <span class="text-destructive">*</span>
+            </label>
+            <input
+              z-input
+              type="text"
+              formControlName="name"
+              placeholder="Enter your full name"
+              [class.border-destructive]="isFieldInvalid(profileForm, 'name')"
+              class="w-full"
+            />
+            @if (getFieldError(profileForm, 'name')) {
+              <p class="text-destructive text-sm mt-1">{{ getFieldError(profileForm, 'name') }}</p>
+            }
+          </div>
+
+          <!-- Email Field (Read-only) -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Email Address <span class="text-destructive">*</span>
+            </label>
+            <input
+              z-input
+              type="email"
+              formControlName="email"
+              [disabled]="true"
+              class="w-full bg-muted"
+            />
+            <p class="text-sm text-muted-foreground mt-1">
+              Email address cannot be changed
+            </p>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex gap-4 pt-4 border-t">
+            <button
+              z-button
+              type="submit"
+              zType="default"
+              [disabled]="isSubmittingProfile() || profileForm.pristine"
+              class="w-full sm:w-auto"
+            >
+              @if (isSubmittingProfile()) {
+                <z-loader class="mr-2"></z-loader>
+                Saving...
+              } @else {
+                <z-icon zType="save" class="mr-2"></z-icon>
+                Save Changes
+              }
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Password Form -->
+      <form [formGroup]="passwordForm" (ngSubmit)="onSubmitPassword()" class="bg-card border border-border rounded-lg p-6">
+        <h3 class="text-xl font-semibold mb-6">Change Password</h3>
+
+        @if (errorMessagePassword()) {
+          <div class="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3 mb-6">
+            <z-icon zType="alert-circle" class="text-destructive"></z-icon>
+            <span class="text-destructive">{{ errorMessagePassword() }}</span>
+          </div>
+        }
+
+        <div class="space-y-6">
+          <!-- Current Password -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Current Password <span class="text-destructive">*</span>
+            </label>
+            <input
+              z-input
+              type="password"
+              formControlName="current_password"
+              placeholder="Enter current password"
+              [class.border-destructive]="isFieldInvalid(passwordForm, 'current_password')"
+              class="w-full"
+            />
+            @if (getFieldError(passwordForm, 'current_password')) {
+              <p class="text-destructive text-sm mt-1">{{ getFieldError(passwordForm, 'current_password') }}</p>
+            }
+          </div>
+
+          <!-- New Password -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              New Password <span class="text-destructive">*</span>
+            </label>
+            <input
+              z-input
+              type="password"
+              formControlName="password"
+              placeholder="Enter new password"
+              [class.border-destructive]="isFieldInvalid(passwordForm, 'password')"
+              class="w-full"
+            />
+            @if (getFieldError(passwordForm, 'password')) {
+              <p class="text-destructive text-sm mt-1">{{ getFieldError(passwordForm, 'password') }}</p>
+            }
+            <p class="text-sm text-muted-foreground mt-1">
+              Password must be at least 8 characters long
+            </p>
+          </div>
+
+          <!-- Confirm Password -->
+          <div>
+            <label class="block text-sm font-medium mb-2">
+              Confirm New Password <span class="text-destructive">*</span>
+            </label>
+            <input
+              z-input
+              type="password"
+              formControlName="password_confirmation"
+              placeholder="Confirm new password"
+              [class.border-destructive]="isFieldInvalid(passwordForm, 'password_confirmation')"
+              class="w-full"
+            />
+            @if (getFieldError(passwordForm, 'password_confirmation')) {
+              <p class="text-destructive text-sm mt-1">{{ getFieldError(passwordForm, 'password_confirmation') }}</p>
+            }
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex gap-4 pt-4 border-t">
+            <button
+              z-button
+              type="submit"
+              zType="default"
+              [disabled]="isSubmittingPassword() || passwordForm.pristine"
+              class="w-full sm:w-auto"
+            >
+              @if (isSubmittingPassword()) {
+                <z-loader class="mr-2"></z-loader>
+                Changing...
+              } @else {
+                <z-icon zType="shield" class="mr-2"></z-icon>
+                Change Password
+              }
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Security Info -->
+      <div class="bg-muted border border-border rounded-lg p-6">
+        <h3 class="font-semibold mb-2 flex items-center gap-2">
+          <z-icon zType="shield"></z-icon>
+          Security Tips
+        </h3>
+        <ul class="space-y-2 text-sm text-muted-foreground">
+          <li class="flex items-start gap-2">
+            <z-icon zType="check" class="text-primary mt-0.5"></z-icon>
+            <span>Use a strong password with at least 8 characters, including letters, numbers, and symbols.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <z-icon zType="check" class="text-primary mt-0.5"></z-icon>
+            <span>Don't share your password with anyone.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <z-icon zType="check" class="text-primary mt-0.5"></z-icon>
+            <span>Change your password regularly to keep your account secure.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <z-icon zType="check" class="text-primary mt-0.5"></z-icon>
+            <span>Verify your email address to enable all account features.</span>
+          </li>
+        </ul>
+      </div>
+    }
+  </div>
+</app-admin-layout>
+

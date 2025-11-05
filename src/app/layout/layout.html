@@ -100,10 +100,25 @@
                 <!--              Account-->
                 <!--            </button>-->
               <app-cart-button/>
-              <button z-button zType="destructive" zSize="sm" (click)="logout()" class="cursor-pointer">
-                <i class="icon-user mr-1"></i>
-                Logout
-              </button>
+              <div class="relative">
+                <button z-button zType="ghost" z-menu [zMenuTriggerFor]="resourcesMenu">
+                  Account
+                  <i class="icon-chevron-down ml-1"></i>
+                </button>
+
+                <ng-template #resourcesMenu>
+                  <div z-menu-content class="w-56">
+                    <button z-menu-item (click)="goToOrders()" class="cursor-pointer">
+                      <i class="icon-list mr-2"></i>
+                      My Orders
+                    </button>
+                    <button z-menu-item (click)="logout()" class="cursor-pointer text-red-600">
+                      <i class="icon-log-out mr-2"></i>
+                      Logout
+                    </button>
+                  </div>
+                </ng-template>
+              </div>
             } @else {
               <button z-button zType="ghost" routerLink="/register" class="cursor-pointer">
                 <i class="icon-user mr-1"></i>
@@ -127,5 +142,9 @@
 </main>
 
 <footer>
-  <ng-content select="[layoutFooter]"></ng-content>
+  <ng-content select="[layoutFooter]">
+    <div class="container mx-auto py-6 text-center text-muted-foreground text-xs">
+      <p>© 2025 MyShop. All rights reserved.</p>
+    </div>
+  </ng-content>
 </footer>

@@ -2,6 +2,7 @@ import {Component, computed, inject} from '@angular/core';
 import {ZardButtonComponent} from '@shared/components/button/button.component';
 import {CartService} from '../../../services/cart/cart.service';
 import {CartItem} from '../../../types';
+import {getImageUrl} from '@shared/utils/utils';
 
 
 @Component({
@@ -40,4 +41,6 @@ export class CartDialog {
       await this.cartService.removeFromCart( item.product_id);
     }
   }
+
+  protected readonly getImageUrl = getImageUrl;
 }

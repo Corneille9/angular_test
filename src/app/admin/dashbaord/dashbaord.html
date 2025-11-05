@@ -1,112 +1,344 @@
-<app-layout>
-<!--  <div layoutMain class="p-6">-->
-<!--    <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>-->
+<app-admin-layout>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">Dashboard</h1>
+        <p class="text-muted-foreground mt-1">Welcome back! Here's what's happening with your store today.</p>
+      </div>
+      <button
+        class="flex items-center gap-2 px-4 py-2 text-sm border rounded-lg hover:bg-accent transition-colors"
+        (click)="loadStats()"
+      >
+        <i class="icon-refresh-cw"></i>
+        Refresh
+      </button>
+    </div>
 
-<!--    @if (isLoading()) {-->
-<!--      <div class="flex justify-center items-center h-64">-->
-<!--        <z-loader/>-->
-<!--      </div>-->
-<!--    } @else if (stats()) {-->
-<!--      &lt;!&ndash; Stats Cards &ndash;&gt;-->
-<!--      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">-->
-<!--        <z-card class="p-6">-->
-<!--          <div class="flex items-center justify-between">-->
-<!--            <div>-->
-<!--              <p class="text-sm text-gray-500 uppercase mb-1">Total Products</p>-->
-<!--              <h3 class="text-3xl font-bold">{{ stats()!.totalProducts }}</h3>-->
-<!--            </div>-->
-<!--            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">-->
-<!--              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>-->
-<!--              </svg>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </z-card>-->
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-96">
+        <z-loader/>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="bg-destructive/10 border border-destructive/20 rounded-xl p-6 text-center">
+        <i class="icon-alert-circle text-destructive text-4xl mb-3"></i>
+        <p class="text-destructive font-medium">{{ errorMessage() }}</p>
+        <button
+          class="mt-4 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
+          (click)="loadStats()"
+        >
+          Try Again
+        </button>
+      </div>
+    } @else if (stats()) {
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Users Stats -->
+        <z-card class="hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <p class="text-sm text-muted-foreground uppercase tracking-wide mb-2">Total Users</p>
+              <h3 class="text-4xl font-bold mb-3">{{ stats()!.users.total }}</h3>
+              <div class="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                <i class="icon-arrow-up text-xs"></i>
+                <span>{{ stats()!.users.new_today }} new today</span>
+              </div>
+              <div class="pt-3 border-t space-y-1">
+                <div class="flex justify-between text-xs">
+                  <span class="text-muted-foreground">Admins</span>
+                  <span class="font-medium">{{ stats()!.users.admins }}</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-muted-foreground">Customers</span>
+                  <span class="font-medium">{{ stats()!.users.customers }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+              <i class="icon-users text-2xl"></i>
+            </div>
+          </div>
+        </z-card>
 
-<!--        <z-card class="p-6">-->
-<!--          <div class="flex items-center justify-between">-->
-<!--            <div>-->
-<!--              <p class="text-sm text-gray-500 uppercase mb-1">Total Orders</p>-->
-<!--              <h3 class="text-3xl font-bold">{{ stats()!.totalOrders }}</h3>-->
-<!--            </div>-->
-<!--            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">-->
-<!--              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>-->
-<!--              </svg>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </z-card>-->
+        <!-- Products Stats -->
+        <z-card class="hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <p class="text-sm text-muted-foreground uppercase tracking-wide mb-2">Total Products</p>
+              <h3 class="text-4xl font-bold mb-3">{{ stats()!.products.total }}</h3>
+              <div class="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                <i class="icon-check-circle text-xs"></i>
+                <span>{{ stats()!.products.active }} active</span>
+              </div>
+              <div class="pt-3 border-t space-y-1">
+                <div class="flex justify-between text-xs">
+                  <span class="text-muted-foreground">Low stock</span>
+                  <span class="font-medium">{{ stats()!.products.low_stock }}</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-muted-foreground">Out of stock</span>
+                  <span class="font-medium">{{ stats()!.products.out_of_stock }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+              <i class="icon-package text-2xl"></i>
+            </div>
+          </div>
+        </z-card>
 
-<!--        <z-card class="p-6">-->
-<!--          <div class="flex items-center justify-between">-->
-<!--            <div>-->
-<!--              <p class="text-sm text-gray-500 uppercase mb-1">Total Revenue</p>-->
-<!--              <h3 class="text-3xl font-bold">${{ stats()!.totalRevenue.toFixed(2) }}</h3>-->
-<!--            </div>-->
-<!--            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">-->
-<!--              <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>-->
-<!--              </svg>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </z-card>-->
+        <!-- Orders Stats -->
+        <z-card class="hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <p class="text-sm text-muted-foreground uppercase tracking-wide mb-2">Total Orders</p>
+              <h3 class="text-4xl font-bold mb-3">{{ stats()!.orders.total }}</h3>
+              <div class="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                <i class="icon-arrow-up text-xs"></i>
+                <span>{{ stats()!.orders.today }} today</span>
+              </div>
+              <div class="pt-3 border-t space-y-1">
+                <div class="flex justify-between text-xs">
+                  <span class="text-muted-foreground">Pending</span>
+                  <span class="font-medium">{{ stats()!.orders.pending }}</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-muted-foreground">Completed</span>
+                  <span class="font-medium">{{ stats()!.orders.completed }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+              <i class="icon-shopping-cart text-2xl"></i>
+            </div>
+          </div>
+        </z-card>
 
-<!--        <z-card class="p-6">-->
-<!--          <div class="flex items-center justify-between">-->
-<!--            <div>-->
-<!--              <p class="text-sm text-gray-500 uppercase mb-1">Total Users</p>-->
-<!--              <h3 class="text-3xl font-bold">{{ stats()!.totalUsers }}</h3>-->
-<!--            </div>-->
-<!--            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">-->
-<!--              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>-->
-<!--              </svg>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </z-card>-->
-<!--      </div>-->
+        <!-- Revenue Stats -->
+        <z-card class="hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <p class="text-sm text-muted-foreground uppercase tracking-wide mb-2">Total Revenue</p>
+              <h3 class="text-4xl font-bold mb-3">{{ formatCurrency(stats()!.revenue.total) }}</h3>
+              <div class="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                <i class="icon-arrow-up text-xs"></i>
+                <span>{{ formatCurrency(stats()!.revenue.today) }} today</span>
+              </div>
+              <div class="pt-3 border-t space-y-1">
+                <div class="flex justify-between text-xs">
+                  <span class="text-muted-foreground">This week</span>
+                  <span class="font-medium">{{ formatCurrency(stats()!.revenue.this_week) }}</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-muted-foreground">This month</span>
+                  <span class="font-medium">{{ formatCurrency(stats()!.revenue.this_month) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+              <i class="icon-dollar-sign text-2xl"></i>
+            </div>
+          </div>
+        </z-card>
+      </div>
 
-<!--      &lt;!&ndash; Quick Actions &ndash;&gt;-->
-<!--      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">-->
-<!--        <z-card class="p-6">-->
-<!--          <h2 class="text-xl font-bold mb-4">Quick Actions</h2>-->
-<!--          <div class="space-y-3">-->
-<!--            <a routerLink="/admin/products/new" class="block p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">-->
-<!--              <div class="flex items-center">-->
-<!--                <svg class="w-5 h-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>-->
-<!--                </svg>-->
-<!--                <span class="font-medium">Add New Product</span>-->
-<!--              </div>-->
-<!--            </a>-->
-<!--            <a routerLink="/admin/products" class="block p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">-->
-<!--              <div class="flex items-center">-->
-<!--                <svg class="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>-->
-<!--                </svg>-->
-<!--                <span class="font-medium">Manage Products</span>-->
-<!--              </div>-->
-<!--            </a>-->
-<!--            <a routerLink="/admin/orders" class="block p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">-->
-<!--              <div class="flex items-center">-->
-<!--                <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>-->
-<!--                </svg>-->
-<!--                <span class="font-medium">View Orders</span>-->
-<!--              </div>-->
-<!--            </a>-->
-<!--          </div>-->
-<!--        </z-card>-->
+      <!-- Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Orders Status - Takes 2 columns -->
+        <div class="lg:col-span-2">
+          <z-card>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold">Order Status</h2>
+              <a routerLink="/admin/orders" class="text-sm hover:underline font-medium">
+                View all →
+              </a>
+            </div>
 
-<!--        <z-card class="p-6">-->
-<!--          <h2 class="text-xl font-bold mb-4">Recent Activity</h2>-->
-<!--          <div class="space-y-3 text-sm text-gray-600">-->
-<!--            <p>• System initialized successfully</p>-->
-<!--            <p>• Dashboard loaded</p>-->
-<!--            <p>• Ready to manage your e-commerce</p>-->
-<!--          </div>-->
-<!--        </z-card>-->
-<!--      </div>-->
-<!--    }-->
-<!--  </div>-->
-</app-layout>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="text-center p-4 border rounded-lg hover:bg-accent transition-colors">
+                <i class="icon-clock text-3xl mb-2 text-muted-foreground"></i>
+                <div class="text-2xl font-bold">{{ stats()!.orders.pending }}</div>
+                <div class="text-sm text-muted-foreground font-medium">Pending</div>
+              </div>
+
+              <div class="text-center p-4 border rounded-lg hover:bg-accent transition-colors">
+                <i class="icon-credit-card text-3xl mb-2 text-muted-foreground"></i>
+                <div class="text-2xl font-bold">{{ stats()!.orders.paid }}</div>
+                <div class="text-sm text-muted-foreground font-medium">Paid</div>
+              </div>
+
+              <div class="text-center p-4 border rounded-lg hover:bg-accent transition-colors">
+                <i class="icon-truck text-3xl mb-2 text-muted-foreground"></i>
+                <div class="text-2xl font-bold">{{ stats()!.orders.shipped }}</div>
+                <div class="text-sm text-muted-foreground font-medium">Shipped</div>
+              </div>
+
+              <div class="text-center p-4 border rounded-lg hover:bg-accent transition-colors">
+                <i class="icon-check-circle text-3xl mb-2 text-muted-foreground"></i>
+                <div class="text-2xl font-bold">{{ stats()!.orders.completed }}</div>
+                <div class="text-sm text-muted-foreground font-medium">Completed</div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t flex items-center justify-between text-sm">
+              <div class="flex items-center text-muted-foreground">
+                <i class="icon-calendar text-lg mr-2"></i>
+                <span>This month: <strong>{{ stats()!.orders.this_month }}</strong> orders</span>
+              </div>
+              @if (stats()!.orders.cancelled > 0) {
+                <div class="flex items-center text-muted-foreground">
+                  <i class="icon-x-circle text-lg mr-2"></i>
+                  <span>Cancelled: <strong>{{ stats()!.orders.cancelled }}</strong></span>
+                </div>
+              }
+            </div>
+          </z-card>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="lg:col-span-1">
+          <z-card>
+            <h2 class="text-xl font-bold mb-6">Quick Actions</h2>
+            <div class="space-y-3">
+              <a
+                routerLink="/admin/products/new"
+                class="flex items-center p-4 border rounded-lg hover:bg-accent transition-colors group"
+              >
+                <div class="w-10 h-10 bg-muted rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
+                  <i class="icon-plus text-lg"></i>
+                </div>
+                <div>
+                  <div class="font-medium">Add Product</div>
+                  <div class="text-xs text-muted-foreground">Create new product</div>
+                </div>
+              </a>
+
+              <a
+                routerLink="/admin/products"
+                class="flex items-center p-4 border rounded-lg hover:bg-accent transition-colors group"
+              >
+                <div class="w-10 h-10 bg-muted rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
+                  <i class="icon-package text-lg"></i>
+                </div>
+                <div>
+                  <div class="font-medium">Products</div>
+                  <div class="text-xs text-muted-foreground">Manage inventory</div>
+                </div>
+              </a>
+
+              <a
+                routerLink="/admin/orders"
+                class="flex items-center p-4 border rounded-lg hover:bg-accent transition-colors group"
+              >
+                <div class="w-10 h-10 bg-muted rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
+                  <i class="icon-shopping-cart text-lg"></i>
+                </div>
+                <div>
+                  <div class="font-medium">Orders</div>
+                  <div class="text-xs text-muted-foreground">View all orders</div>
+                </div>
+              </a>
+
+              <a
+                routerLink="/admin/payments"
+                class="flex items-center p-4 border rounded-lg hover:bg-accent transition-colors group"
+              >
+                <div class="w-10 h-10 bg-muted rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
+                  <i class="icon-credit-card text-lg"></i>
+                </div>
+                <div>
+                  <div class="font-medium">Payments</div>
+                  <div class="text-xs text-muted-foreground">View transactions</div>
+                </div>
+              </a>
+            </div>
+          </z-card>
+        </div>
+      </div>
+
+      <!-- Additional Stats Row -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Product Health -->
+        <z-card>
+          <h3 class="text-lg font-bold mb-4">Product Inventory</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 border rounded-lg">
+              <span class="text-sm font-medium">Active</span>
+              <span class="text-lg font-bold">{{ stats()!.products.active }}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 border rounded-lg">
+              <span class="text-sm font-medium">Inactive</span>
+              <span class="text-lg font-bold">{{ stats()!.products.inactive }}</span>
+            </div>
+            @if (stats()!.products.low_stock > 0) {
+              <div class="flex items-center justify-between p-3 border rounded-lg bg-accent">
+                <span class="text-sm font-medium">Low Stock</span>
+                <span class="text-lg font-bold">{{ stats()!.products.low_stock }}</span>
+              </div>
+            }
+            @if (stats()!.products.out_of_stock > 0) {
+              <div class="flex items-center justify-between p-3 border rounded-lg bg-accent">
+                <span class="text-sm font-medium">Out of Stock</span>
+                <span class="text-lg font-bold">{{ stats()!.products.out_of_stock }}</span>
+              </div>
+            }
+          </div>
+        </z-card>
+
+        <!-- Revenue Breakdown -->
+        <z-card>
+          <h3 class="text-lg font-bold mb-4">Revenue Timeline</h3>
+          <div class="space-y-3">
+            <div class="p-3 border rounded-lg">
+              <div class="text-sm text-muted-foreground mb-1">Today</div>
+              <div class="text-2xl font-bold">{{ formatCurrency(stats()!.revenue.today) }}</div>
+            </div>
+            <div class="p-3 border rounded-lg">
+              <div class="text-sm text-muted-foreground mb-1">This Week</div>
+              <div class="text-2xl font-bold">{{ formatCurrency(stats()!.revenue.this_week) }}</div>
+            </div>
+            <div class="p-3 border rounded-lg">
+              <div class="text-sm text-muted-foreground mb-1">This Month</div>
+              <div class="text-2xl font-bold">{{ formatCurrency(stats()!.revenue.this_month) }}</div>
+            </div>
+          </div>
+        </z-card>
+
+        <!-- User Stats -->
+        <z-card>
+          <h3 class="text-lg font-bold mb-4">Users Overview</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 border rounded-lg">
+              <div class="flex items-center gap-2">
+                <i class="icon-shield text-muted-foreground"></i>
+                <span class="text-sm font-medium">Admins</span>
+              </div>
+              <span class="text-lg font-bold">{{ stats()!.users.admins }}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 border rounded-lg">
+              <div class="flex items-center gap-2">
+                <i class="icon-users text-muted-foreground"></i>
+                <span class="text-sm font-medium">Customers</span>
+              </div>
+              <span class="text-lg font-bold">{{ stats()!.users.customers }}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 border rounded-lg">
+              <div class="flex items-center gap-2">
+                <i class="icon-user-plus text-muted-foreground"></i>
+                <span class="text-sm font-medium">New Today</span>
+              </div>
+              <span class="text-lg font-bold">{{ stats()!.users.new_today }}</span>
+            </div>
+          </div>
+        </z-card>
+      </div>
+
+    } @else {
+      <div class="text-center py-12 border rounded-xl">
+        <i class="icon-alert-circle text-4xl text-muted-foreground mb-3"></i>
+        <p class="text-muted-foreground">No statistics available</p>
+      </div>
+    }
+  </div>
+</app-admin-layout>
+

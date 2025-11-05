@@ -1,0 +1,353 @@
+<app-admin-layout>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">Payments Management</h1>
+        <p class="text-muted-foreground mt-1">Track and manage all payment transactions</p>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
+        <z-icon zType="alert-circle" class="text-destructive"></z-icon>
+        <span class="text-destructive">{{ errorMessage() }}</span>
+        <button
+          class="ml-auto px-3 py-1 text-sm border rounded hover:bg-accent"
+          (click)="loadPayments()"
+        >
+          Retry
+        </button>
+      </div>
+    }
+
+    <!-- Filters Section -->
+    <div class="border border-border rounded-lg p-6">
+      <h2 class="text-lg font-semibold mb-4">Filters</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <!-- Search by Order ID -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Order ID</label>
+          <input
+            z-input
+            type="number"
+            placeholder="Search by order ID..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchInput()"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Status</label>
+          <z-select
+            [placeholder]="'All Status'"
+            [(ngModel)]="statusFilter"
+            (selectionChange)="onStatusChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="all">All Status</z-select-item>
+            <z-select-item value="pending">Pending</z-select-item>
+            <z-select-item value="completed">Completed</z-select-item>
+            <z-select-item value="failed">Failed</z-select-item>
+            <z-select-item value="refunded">Refunded</z-select-item>
+          </z-select>
+        </div>
+
+        <!-- Payment Method Filter -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Payment Method</label>
+          <z-select
+            [placeholder]="'All Methods'"
+            [(ngModel)]="methodFilter"
+            (selectionChange)="onMethodChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="all">All Methods</z-select-item>
+            <z-select-item value="stripe">Stripe</z-select-item>
+            <z-select-item value="credit_card">Credit Card</z-select-item>
+            <z-select-item value="debit_card">Debit Card</z-select-item>
+            <z-select-item value="paypal">PayPal</z-select-item>
+            <z-select-item value="offline">Offline</z-select-item>
+          </z-select>
+        </div>
+
+        <!-- Sort By -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Sort By</label>
+          <z-select
+            [placeholder]="'Default'"
+            [(ngModel)]="selectedSort"
+            (selectionChange)="onSortChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="default">Newest First</z-select-item>
+            <z-select-item value="created_at_asc">Oldest First</z-select-item>
+            <z-select-item value="amount_desc">Amount: High to Low</z-select-item>
+            <z-select-item value="amount_asc">Amount: Low to High</z-select-item>
+          </z-select>
+        </div>
+      </div>
+
+      <!-- Date Range -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Start Date</label>
+          <input
+            z-input
+            type="date"
+            [(ngModel)]="startDate"
+            (change)="applyFilters()"
+            class="w-full"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">End Date</label>
+          <input
+            z-input
+            type="date"
+            [(ngModel)]="endDate"
+            (change)="applyFilters()"
+            class="w-full"
+          />
+        </div>
+
+        <div class="flex items-end">
+          <button
+            z-button
+            [zType]="'outline'"
+            (click)="clearFilters()"
+            class="w-full"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-96">
+        <z-loader/>
+      </div>
+    } @else if (payments().length === 0) {
+      <div class="border rounded-lg p-12 text-center">
+        <z-icon zType="circle-dollar-sign" class="text-6xl text-muted-foreground mb-4 mx-auto"></z-icon>
+        <h3 class="text-xl font-semibold mb-2">No payments found</h3>
+        <p class="text-muted-foreground mb-6">There are no payments matching your filters</p>
+        <button z-button zType="outline" (click)="clearFilters()">
+          Clear Filters
+        </button>
+      </div>
+    } @else {
+      <!-- Payments Table -->
+      <div class="overflow-hidden rounded-md border">
+        <table z-table>
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head class="w-24">Payment ID</th>
+              <th z-table-head class="w-24">Order ID</th>
+              <th z-table-head class="text-right">Amount</th>
+              <th z-table-head class="text-center">Payment Method</th>
+              <th z-table-head class="text-center">Status</th>
+              <th z-table-head>Date</th>
+              <th z-table-head class="w-24">Actions</th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (payment of payments(); track payment.id) {
+              <tr z-table-row>
+                <!-- Payment ID -->
+                <td z-table-cell>
+                  <div class="font-medium">#{{ payment.id }}</div>
+                </td>
+
+                <!-- Order ID -->
+                <td z-table-cell>
+                  <div class="font-medium">
+                    <a class="text-primary hover:underline cursor-pointer" (click)="viewOrder(payment.order_id)">
+                      #{{ payment.order_id }}
+                    </a>
+                  </div>
+                </td>
+
+                <!-- Amount -->
+                <td z-table-cell>
+                  <div class="text-right font-semibold">
+                    {{ formatCurrency(payment.amount) }}
+                  </div>
+                </td>
+
+                <!-- Payment Method -->
+                <td z-table-cell>
+                  <div class="flex justify-center">
+                    <z-badge [zType]="getMethodBadgeType(payment.payment_method)">
+                      {{ formatPaymentMethod(payment.payment_method) }}
+                    </z-badge>
+                  </div>
+                </td>
+
+                <!-- Status -->
+                <td z-table-cell>
+                  <div class="flex justify-center">
+                    <z-badge [zType]="getStatusBadgeType(payment.status)">
+                      {{ payment.status }}
+                    </z-badge>
+                  </div>
+                </td>
+
+                <!-- Date -->
+                <td z-table-cell>
+                  <div class="text-sm">{{ formatDate(payment.created_at) }}</div>
+                </td>
+
+                <!-- Actions -->
+                <td z-table-cell>
+                  <div class="flex items-center justify-center">
+                    <button
+                      z-button
+                      zType="ghost"
+                      (click)="viewPaymentDetails(payment)"
+                      title="View details"
+                    >
+                      <z-icon zType="eye"></z-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr z-table-row>
+                <td z-table-cell [attr.colspan]="7" class="h-24 text-center">
+                  <div class="flex flex-col items-center gap-2">
+                    <z-icon zType="search" class="text-4xl text-muted-foreground"></z-icon>
+                    <span class="text-muted-foreground">No payments found matching your filters.</span>
+                    <button
+                      z-button
+                      zType="outline"
+                      zSize="sm"
+                      (click)="clearFilters()"
+                      class="mt-2"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Results count and pagination -->
+      <div class="flex items-center justify-between text-sm text-muted-foreground">
+        <div>
+          Showing {{ payments().length }} payments (Page {{ currentPage() }} of {{ totalPages() }})
+        </div>
+
+        @if (totalPages() > 1) {
+          <div class="flex items-center gap-2">
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              [disabled]="currentPage() === 1"
+              (click)="loadPayments(currentPage() - 1)"
+            >
+              <z-icon zType="chevron-left"></z-icon>
+            </button>
+            <span class="text-sm">
+              Page {{ currentPage() }} of {{ totalPages() }}
+            </span>
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              [disabled]="currentPage() === totalPages()"
+              (click)="loadPayments(currentPage() + 1)"
+            >
+              <z-icon zType="chevron-right"></z-icon>
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Payment Details Modal -->
+    @if (selectedPayment()) {
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="closeDetails()">
+        <div class="bg-background rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+          <div class="p-6">
+            <!-- Header -->
+            <div class="flex justify-between items-start mb-6 border-b pb-4">
+              <div>
+                <h2 class="text-2xl font-bold">Payment #{{ selectedPayment()!.id }}</h2>
+                <p class="text-muted-foreground mt-1">{{ formatDate(selectedPayment()!.created_at) }}</p>
+              </div>
+              <button
+                z-button
+                zType="ghost"
+                (click)="closeDetails()"
+              >
+                <z-icon zType="x"></z-icon>
+              </button>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="space-y-4">
+              <!-- Amount -->
+              <div class="bg-muted p-4 rounded-lg">
+                <div class="text-sm text-muted-foreground mb-1">Amount</div>
+                <div class="text-3xl font-bold">{{ formatCurrency(selectedPayment()!.amount) }}</div>
+              </div>
+
+              <!-- Status & Method -->
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-muted p-4 rounded-lg">
+                  <div class="text-sm text-muted-foreground mb-2">Status</div>
+                  <z-badge [zType]="getStatusBadgeType(selectedPayment()!.status)" class="text-base px-4 py-2">
+                    {{ selectedPayment()!.status }}
+                  </z-badge>
+                </div>
+
+                <div class="bg-muted p-4 rounded-lg">
+                  <div class="text-sm text-muted-foreground mb-2">Payment Method</div>
+                  <z-badge [zType]="getMethodBadgeType(selectedPayment()!.payment_method)" class="text-base px-4 py-2">
+                    {{ formatPaymentMethod(selectedPayment()!.payment_method) }}
+                  </z-badge>
+                </div>
+              </div>
+
+              <!-- Order Info -->
+              <div class="bg-muted p-4 rounded-lg">
+                <div class="text-sm text-muted-foreground mb-2">Related Order</div>
+                <div class="font-semibold">
+                  Order #{{ selectedPayment()!.order_id }}
+                  @if (selectedPayment()!.order) {
+                    <div class="text-sm text-muted-foreground mt-1">
+                      Total: {{ formatCurrency(selectedPayment()!.order!.total) }}
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Timestamps -->
+              <div class="bg-muted p-4 rounded-lg space-y-2">
+                <div class="flex justify-between text-sm">
+                  <span class="text-muted-foreground">Created:</span>
+                  <span class="font-medium">{{ formatDate(selectedPayment()!.created_at) }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-muted-foreground">Updated:</span>
+                  <span class="font-medium">{{ formatDate(selectedPayment()!.updated_at) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</app-admin-layout>
+

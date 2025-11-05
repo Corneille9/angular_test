@@ -1,0 +1,73 @@
+<div class="flex items-center justify-center min-h-screen py-8">
+  <div class="w-full max-w-md px-4">
+    <div class="text-center mb-6">
+      <a routerLink="/" class="text-2xl font-bold">
+        MyShop
+      </a>
+    </div>
+
+    <z-card class="w-full" zTitle="Verify Your Email" [zDescription]="'We\'ve sent a 6-digit verification code to ' + userEmail">
+      <div class="space-y-4">
+        <fieldset [disabled]="isLoading()">
+          <form class="flex flex-col gap-4" [formGroup]="verifyForm" (ngSubmit)="onSubmit()">
+            <z-form-field>
+              <label z-form-label zRequired>Verification Code</label>
+              <z-form-control>
+                <input
+                  z-input
+                  type="text"
+                  id="code"
+                  formControlName="code"
+                  placeholder="Enter 6-digit code"
+                  maxlength="6"
+                  class="text-center text-lg tracking-widest"
+                >
+              </z-form-control>
+              @if (verifyForm.get('code')?.touched && verifyForm.get('code')?.invalid) {
+                <z-form-message zType="error">
+                  @if (verifyForm.get('code')?.errors?.['required']) {
+                    Verification code is required
+                  }
+                  @if (verifyForm.get('code')?.errors?.['pattern']) {
+                    Code must be 6 digits
+                  }
+                </z-form-message>
+              }
+            </z-form-field>
+
+            <button z-button zType="default" type="submit" [disabled]="verifyForm.invalid || isLoading()" class="w-full cursor-pointer">
+              @if (isLoading()) {
+                <span>Verifying...</span>
+              } @else {
+                <span>Verify Email</span>
+              }
+            </button>
+
+            <div class="text-center pt-2 border-t">
+              <p class="text-sm text-muted-foreground mb-2">Didn't receive the code?</p>
+              <button
+                z-button
+                zType="ghost"
+                type="button"
+                (click)="resendCode()"
+                [disabled]="isResending()"
+                class="cursor-pointer mt-5"
+              >
+                @if (isResending()) {
+                  <span>Sending...</span>
+                } @else {
+                  <span>Resend Code</span>
+                }
+              </button>
+            </div>
+          </form>
+        </fieldset>
+
+        <div class="text-center pt-2 border-t">
+          <button z-button zType="link" routerLink="/auth/login" class="cursor-pointer text-xs">← Back to Login</button>
+        </div>
+      </div>
+    </z-card>
+  </div>
+</div>
+

@@ -47,6 +47,18 @@ export class Login {
         password: this.loginForm.value.password
       });
 
+      const user = this.authService.user();
+
+      if (!user!.has_verified_email) {
+        this.router.navigate(['/auth/verify-email']);
+        return;
+      }
+
+      if(this.authService.isAdmin()){
+        this.router.navigate(['/admin/dashboard']);
+        return;
+      }
+
       if (success) this.router.navigate(['/']);
     } catch (e) {
       this.errorMessage.set("An error occurred. Please verify your credentials");

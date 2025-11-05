@@ -15,12 +15,15 @@ export class ProductService {
   // Product Methods
   getProducts(params?: {
     per_page?: number;
+    page?: number;
     search?: string;
     category_id?: number;
     min_price?: number;
     max_price?: number;
+    min_stock?: number;
+    max_stock?: number;
     in_stock?: boolean;
-    is_active?: boolean;
+    is_active?: number;
     sort_by?: string;
     sort_order?: 'asc' | 'desc';
   }): Observable<PaginatedResponse<Product>> {
@@ -82,10 +85,14 @@ export class ProductService {
   }
 
   // Category Methods
-  getCategories(params?: { per_page?: number }): Observable<PaginatedResponse<Category>> {
+  getCategories(params?: { per_page?: number, search?: string, sort_by?: string, sort_order?: 'asc' | 'desc', page?: number }): Observable<PaginatedResponse<Category>> {
     let httpParams = new HttpParams();
-    if (params?.per_page) {
-      httpParams = httpParams.set('per_page', params.per_page.toString());
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          httpParams = httpParams.set(key, value.toString());
+        }
+      });
     }
     return this.http.get<PaginatedResponse<Category>>(`${API_BASE_URL}/categories`, {params: httpParams});
   }

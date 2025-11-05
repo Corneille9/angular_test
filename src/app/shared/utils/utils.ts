@@ -1,4 +1,4 @@
-export const API_BASE = 'http://127.0.0.1:8000/api';
+import {SERVER_URL} from '../../config/api';
 
 export function debounceAsync<T extends (...args: any[]) => any>(
   fn: T,
@@ -34,3 +34,16 @@ export function debounceAsync<T extends (...args: any[]) => any>(
   };
 }
 
+
+
+export function getImageUrl(imagePath: string | null): string {
+  if (!imagePath) {
+    return 'https://placehold.co/600x400';
+  }
+  // If it's already a full URL, return it
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  // Otherwise, construct the full URL
+  return `${SERVER_URL}${imagePath}`;
+}

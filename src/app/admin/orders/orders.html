@@ -1,151 +1,374 @@
-<app-layout>
-<!--  <div layoutMain class="p-6">-->
-<!--    <h1 class="text-3xl font-bold mb-6">Orders Management</h1>-->
+<app-admin-layout>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">Orders Management</h1>
+        <p class="text-muted-foreground mt-1">View and manage all customer orders</p>
+      </div>
+    </div>
 
-<!--    @if (isLoading()) {-->
-<!--      <div class="flex justify-center items-center h-64">-->
-<!--        <z-loader/>-->
-<!--      </div>-->
-<!--    } @else {-->
-<!--      <z-card class="overflow-hidden">-->
-<!--        <div class="overflow-x-auto">-->
-<!--          <table class="w-full">-->
-<!--            <thead class="bg-gray-50">-->
-<!--            <tr>-->
-<!--              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">-->
-<!--                Order ID-->
-<!--              </th>-->
-<!--              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">-->
-<!--                User ID-->
-<!--              </th>-->
-<!--              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">-->
-<!--                Date-->
-<!--              </th>-->
-<!--              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">-->
-<!--                Products-->
-<!--              </th>-->
-<!--              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">-->
-<!--                Total-->
-<!--              </th>-->
-<!--              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">-->
-<!--                Status-->
-<!--              </th>-->
-<!--              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">-->
-<!--                Actions-->
-<!--              </th>-->
-<!--            </tr>-->
-<!--            </thead>-->
-<!--            <tbody class="bg-white divide-y divide-gray-200">-->
-<!--              @for (order of orders(); track order.id) {-->
-<!--                <tr class="hover:bg-gray-50 transition-colors">-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">-->
-<!--                    #{{ order.id }}-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-->
-<!--                    User {{ order.userId }}-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-->
-<!--&lt;!&ndash;                    {{ order.date | date:'short' }}&ndash;&gt;-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-->
-<!--                    {{ order.products.length }} items-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">-->
-<!--                    ${{ order.total.toFixed(2) }}-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap">-->
-<!--                    <select-->
-<!--                      z-select-->
-<!--                      [value]="order.status"-->
-<!--                      (change)="updateStatus(order, $any($event.target).value)"-->
-<!--                      [class]="'px-3 py-1 text-xs font-semibold rounded-full ' + getStatusColor(order.status)">-->
-<!--                      @for (status of statusOptions; track status) {-->
-<!--                        <option [value]="status">{{ status }}</option>-->
-<!--                      }-->
-<!--                    </select>-->
-<!--                  </td>-->
-<!--                  <td class="px-6 py-4 whitespace-nowrap text-sm">-->
-<!--                    <button-->
-<!--                      z-button-->
-<!--                      zType="default"-->
-<!--                      zSize="sm"-->
-<!--                      (click)="viewOrderDetails(order)">-->
-<!--                      View Details-->
-<!--                    </button>-->
-<!--                  </td>-->
-<!--                </tr>-->
-<!--              } @empty {-->
-<!--                <tr>-->
-<!--                  <td colspan="7" class="px-6 py-12 text-center text-gray-500">-->
-<!--                    No orders found-->
-<!--                  </td>-->
-<!--                </tr>-->
-<!--              }-->
-<!--            </tbody>-->
-<!--          </table>-->
-<!--        </div>-->
-<!--      </z-card>-->
-<!--    }-->
+    @if (errorMessage()) {
+      <div class="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
+        <z-icon zType="alert-circle" class="text-destructive"></z-icon>
+        <span class="text-destructive">{{ errorMessage() }}</span>
+        <button
+          class="ml-auto px-3 py-1 text-sm border rounded hover:bg-accent"
+          (click)="loadOrders()"
+        >
+          Retry
+        </button>
+      </div>
+    }
 
-<!--    &lt;!&ndash; Order Details Modal &ndash;&gt;-->
-<!--    @if (selectedOrder()) {-->
-<!--      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeDetails()">-->
-<!--        <z-card class="max-w-2xl w-full m-4 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">-->
-<!--          <div class="p-6">-->
-<!--            <div class="flex justify-between items-start mb-6">-->
-<!--              <div>-->
-<!--                <h2 class="text-2xl font-bold">Order #{{ selectedOrder()!.id }}</h2>-->
-<!--&lt;!&ndash;                <p class="text-gray-500 mt-1">Placed on {{ selectedOrder()!.date | date:'medium' }}</p>&ndash;&gt;-->
-<!--              </div>-->
-<!--              <button-->
-<!--                z-button-->
-<!--                zType="ghost"-->
-<!--                zSize="sm"-->
-<!--                (click)="closeDetails()"-->
-<!--                class="text-gray-400 hover:text-gray-600">-->
-<!--                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>-->
-<!--                </svg>-->
-<!--              </button>-->
-<!--            </div>-->
+    <!-- Filters Section -->
+    <div class=" border border-border rounded-lg p-6">
+      <h2 class="text-lg font-semibold mb-4">Filters</h2>
 
-<!--            <div class="space-y-4">-->
-<!--              <div>-->
-<!--                <h3 class="font-semibold mb-2">Customer Information</h3>-->
-<!--                <p class="text-sm text-gray-600">User ID: {{ selectedOrder()!.userId }}</p>-->
-<!--              </div>-->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <!-- Search -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Search</label>
+          <input
+            z-input
+            type="text"
+            placeholder="Search orders..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchInput()"
+            class="w-full"
+          />
+        </div>
 
-<!--              <div>-->
-<!--                <h3 class="font-semibold mb-2">Order Status</h3>-->
-<!--                <span [class]="'inline-block px-3 py-1 text-sm font-semibold rounded-full ' + getStatusColor(selectedOrder()!.status)">-->
-<!--                  {{ selectedOrder()!.status }}-->
-<!--                </span>-->
-<!--              </div>-->
+        <!-- Status Filter -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Status</label>
+          <z-select
+            [placeholder]="'All Status'"
+            [(ngModel)]="statusFilter"
+            (selectionChange)="onStatusChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="all">All Status</z-select-item>
+            <z-select-item value="pending">Pending</z-select-item>
+            <z-select-item value="paid">Paid</z-select-item>
+            <z-select-item value="shipped">Shipped</z-select-item>
+            <z-select-item value="completed">Completed</z-select-item>
+            <z-select-item value="cancelled">Cancelled</z-select-item>
+          </z-select>
+        </div>
 
-<!--              <div>-->
-<!--                <h3 class="font-semibold mb-2">Products ({{ selectedOrder()!.products.length }} items)</h3>-->
-<!--                <div class="space-y-2">-->
-<!--                  @for (item of selectedOrder()!.products; track item.productId) {-->
-<!--                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">-->
-<!--                      <div>-->
-<!--                        <p class="font-medium">Product ID: {{ item.productId }}</p>-->
-<!--                        <p class="text-sm text-gray-500">Quantity: {{ item.quantity }}</p>-->
-<!--                      </div>-->
-<!--                    </div>-->
-<!--                  }-->
-<!--                </div>-->
-<!--              </div>-->
+        <!-- Sort By -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Sort By</label>
+          <z-select
+            [placeholder]="'Default'"
+            [(ngModel)]="selectedSort"
+            (selectionChange)="onSortChange($event)"
+            class="w-full"
+          >
+            <z-select-item value="default">Newest First</z-select-item>
+            <z-select-item value="created_at_asc">Oldest First</z-select-item>
+            <z-select-item value="total_desc">Total: High to Low</z-select-item>
+            <z-select-item value="total_asc">Total: Low to High</z-select-item>
+          </z-select>
+        </div>
 
-<!--              <div class="border-t pt-4">-->
-<!--                <div class="flex justify-between items-center text-lg font-bold">-->
-<!--                  <span>Total:</span>-->
-<!--                  <span>${{ selectedOrder()!.total.toFixed(2) }}</span>-->
-<!--                </div>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </z-card>-->
-<!--      </div>-->
-<!--    }-->
-<!--  </div>-->
-</app-layout>
+        <!-- Clear Filters -->
+        <div class="flex items-end">
+          <button
+            z-button
+            [zType]="'outline'"
+            (click)="clearFilters()"
+            class="w-full"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Date Range -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Start Date</label>
+          <input
+            z-input
+            type="date"
+            [(ngModel)]="startDate"
+            (change)="applyFilters()"
+            class="w-full"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">End Date</label>
+          <input
+            z-input
+            type="date"
+            [(ngModel)]="endDate"
+            (change)="applyFilters()"
+            class="w-full"
+          />
+        </div>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-96">
+        <z-loader/>
+      </div>
+    } @else if (orders().length === 0) {
+      <div class="border rounded-lg p-12 text-center">
+        <z-icon zType="inbox" class="text-6xl text-muted-foreground mb-4 mx-auto"></z-icon>
+        <h3 class="text-xl font-semibold mb-2">No orders found</h3>
+        <p class="text-muted-foreground mb-6">There are no orders matching your filters</p>
+        <button z-button zType="outline" (click)="clearFilters()">
+          Clear Filters
+        </button>
+      </div>
+    } @else {
+      <!-- Orders Table -->
+      <div class="overflow-hidden rounded-md border">
+        <table z-table>
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head class="w-24">Order ID</th>
+              <th z-table-head>Customer</th>
+              <th z-table-head>Date</th>
+              <th z-table-head class="text-center">Items</th>
+              <th z-table-head class="text-right">Total</th>
+              <th z-table-head class="text-center">Status</th>
+              <th z-table-head class="w-40">Actions</th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (order of orders(); track order.id) {
+              <tr z-table-row>
+                <!-- Order ID -->
+                <td z-table-cell>
+                  <div class="font-medium">#{{ order.id }}</div>
+                </td>
+
+                <!-- Customer -->
+                <td z-table-cell>
+                  <div>
+                    @if (order.user) {
+                      <div class="font-medium">{{ order.user.name }}</div>
+                      <div class="text-sm text-muted-foreground">{{ order.user.email }}</div>
+                    } @else {
+                      <span class="text-muted-foreground">User #{{ order.user_id }}</span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Date -->
+                <td z-table-cell>
+                  <div class="text-sm">{{ formatDate(order.created_at) }}</div>
+                </td>
+
+                <!-- Items Count -->
+                <td z-table-cell>
+                  <div class="text-center">
+                    <span class="font-medium">{{ order.items_count || order.items?.length || 0 }}</span>
+                    <span class="text-sm text-muted-foreground"> items</span>
+                  </div>
+                </td>
+
+                <!-- Total -->
+                <td z-table-cell>
+                  <div class="text-right font-medium">{{ formatCurrency(order.total) }}</div>
+                </td>
+
+                <!-- Status -->
+                <td z-table-cell>
+                  <div class="flex justify-center">
+                    <z-badge [zType]="getStatusBadgeType(order.status)">
+                      {{ order.status }}
+                    </z-badge>
+                  </div>
+                </td>
+
+                <!-- Actions -->
+                <td z-table-cell>
+                  <div class="flex items-center gap-2">
+                    <button
+                      z-button
+                      zType="ghost"
+                      (click)="viewOrderDetails(order)"
+                      title="View details"
+                    >
+                      <z-icon zType="eye"></z-icon>
+                    </button>
+
+                    <!-- Status Change Dropdown -->
+                    <z-select
+                      [(ngModel)]="order.status"
+                      (selectionChange)="updateOrderStatus(order, $event)"
+                      class="w-32"
+                    >
+                      <z-select-item value="pending">Pending</z-select-item>
+                      <z-select-item value="paid">Paid</z-select-item>
+                      <z-select-item value="shipped">Shipped</z-select-item>
+                      <z-select-item value="completed">Completed</z-select-item>
+                      <z-select-item value="cancelled">Cancelled</z-select-item>
+                    </z-select>
+
+                    <button
+                      z-button
+                      zType="ghost"
+                      (click)="deleteOrder(order)"
+                      title="Delete order"
+                      class="text-destructive hover:text-destructive"
+                    >
+                      <z-icon zType="trash-2"></z-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr z-table-row>
+                <td z-table-cell [attr.colspan]="7" class="h-24 text-center">
+                  <div class="flex flex-col items-center gap-2">
+                    <z-icon zType="search" class="text-4xl text-muted-foreground"></z-icon>
+                    <span class="text-muted-foreground">No orders found matching your filters.</span>
+                    <button
+                      z-button
+                      zType="outline"
+                      zSize="sm"
+                      (click)="clearFilters()"
+                      class="mt-2"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Results count and pagination -->
+      <div class="flex items-center justify-between text-sm text-muted-foreground">
+        <div>
+          Showing {{ orders().length }} orders (Page {{ currentPage() }} of {{ totalPages() }})
+        </div>
+
+        @if (totalPages() > 1) {
+          <div class="flex items-center gap-2">
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              [disabled]="currentPage() === 1"
+              (click)="loadOrders(currentPage() - 1)"
+            >
+              <z-icon zType="chevron-left"></z-icon>
+            </button>
+            <span class="text-sm">
+              Page {{ currentPage() }} of {{ totalPages() }}
+            </span>
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              [disabled]="currentPage() === totalPages()"
+              (click)="loadOrders(currentPage() + 1)"
+            >
+              <z-icon zType="chevron-right"></z-icon>
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Order Details Modal -->
+    @if (selectedOrder()) {
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="closeDetails()">
+        <div class="bg-background rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+          <div class="p-6">
+            <!-- Header -->
+            <div class="flex justify-between items-start mb-6 border-b pb-4">
+              <div>
+                <h2 class="text-2xl font-bold">Order #{{ selectedOrder()!.id }}</h2>
+                <p class="text-muted-foreground mt-1">{{ formatDate(selectedOrder()!.created_at) }}</p>
+              </div>
+              <button
+                z-button
+                zType="ghost"
+                (click)="closeDetails()"
+              >
+                <z-icon zType="x"></z-icon>
+              </button>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="mb-6">
+              <h3 class="font-semibold mb-3 text-lg">Customer Information</h3>
+              <div class="bg-muted p-4 rounded-lg">
+                @if (selectedOrder()!.user) {
+                  <div class="space-y-2">
+                    <div class="flex justify-between">
+                      <span class="text-muted-foreground">Name:</span>
+                      <span class="font-medium">{{ selectedOrder()!.user?.name }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-foreground">Email:</span>
+                      <span class="font-medium">{{ selectedOrder()!.user?.email }}</span>
+                    </div>
+                  </div>
+                } @else {
+                  <p class="text-muted-foreground">User ID: {{ selectedOrder()!.user_id }}</p>
+                }
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="mb-6">
+              <h3 class="font-semibold mb-3 text-lg">Order Status</h3>
+              <z-badge [zType]="getStatusBadgeType(selectedOrder()!.status)" class="text-base px-4 py-2">
+                {{ selectedOrder()!.status }}
+              </z-badge>
+            </div>
+
+            <!-- Order Items -->
+            <div class="mb-6">
+              <h3 class="font-semibold mb-3 text-lg">
+                Order Items ({{ selectedOrder()!.items?.length || selectedOrder()!.items_count || 0 }})
+              </h3>
+              @if (selectedOrder()!.items && selectedOrder()!.items!.length > 0) {
+                <div class="space-y-3">
+                  @for (item of selectedOrder()!.items; track item.id) {
+                    <div class="flex items-center justify-between p-4 bg-muted rounded-lg">
+                      <div class="flex-1">
+                        <p class="font-medium">{{ item.product?.name || 'Product #' + item.product_id }}</p>
+                        <div class="flex gap-4 text-sm text-muted-foreground mt-1">
+                          <span>Qty: {{ item.quantity }}</span>
+                          <span>Price: {{ formatCurrency(item.price) }}</span>
+                        </div>
+                      </div>
+                      <div class="text-right font-semibold">
+                        {{ formatCurrency(item.subtotal) }}
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="text-muted-foreground">
+                  {{ selectedOrder()!.items_count || 0 }} item(s) in this order
+                </p>
+              }
+            </div>
+
+            <!-- Total -->
+            <div class="border-t pt-4">
+              <div class="flex justify-between items-center text-xl font-bold">
+                <span>Total:</span>
+                <span>{{ formatCurrency(selectedOrder()!.total) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</app-admin-layout>

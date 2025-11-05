@@ -1,5 +1,5 @@
 <z-card class="p-4 cursor-pointer">
-  <img [src]="product.image" [alt]="product.name" class="rounded-md mb-4 w-full h-64 object-contain overflow-hidden transition-all duration-300 hover:scale-105 hover:z-10">
+  <img [src]="getImageUrl(product.image)" [alt]="product.name" class="rounded-md mb-4 w-full h-64 object-contain overflow-hidden transition-all duration-300 hover:scale-105 hover:z-10">
 
   <p class="text-sm text-blue-600  uppercase mb-2 line-clamp-2">
     @if (product.main_category) {

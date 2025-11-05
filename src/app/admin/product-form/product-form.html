@@ -1,151 +1,221 @@
-<app-layout>
-<!--  <div layoutMain class="p-6 max-w-4xl mx-auto">-->
-<!--    <div class="mb-6">-->
-<!--      <button-->
-<!--        z-button-->
-<!--        zType="ghost"-->
-<!--        (click)="cancel()"-->
-<!--        class="mb-4">-->
-<!--        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>-->
-<!--        </svg>-->
-<!--        Back to Products-->
-<!--      </button>-->
-<!--      <h1 class="text-3xl font-bold">-->
-<!--        {{ isEditMode() ? 'Edit Product' : 'Add New Product' }}-->
-<!--      </h1>-->
-<!--    </div>-->
+<app-admin-layout>
+  <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">
+          {{ isEditMode() ? 'Edit Product' : 'Create Product' }}
+        </h1>
+        <p class="text-muted-foreground mt-1">
+          {{ isEditMode() ? 'Update product information' : 'Add a new product to your inventory' }}
+        </p>
+      </div>
+    </div>
 
-<!--    <z-card class="p-6">-->
-<!--      <form [formGroup]="productForm" (ngSubmit)="onSubmit()">-->
-<!--        <div class="space-y-6">-->
-<!--          &lt;!&ndash; Title &ndash;&gt;-->
-<!--          <div>-->
-<!--            <label class="block text-sm font-medium text-gray-700 mb-2">-->
-<!--              Product Title *-->
-<!--            </label>-->
-<!--            <input-->
-<!--              z-input-->
-<!--              type="text"-->
-<!--              formControlName="title"-->
-<!--              placeholder="Enter product title"-->
-<!--              class="w-full"-->
-<!--              [class.border-red-500]="productForm.get('title')?.invalid && productForm.get('title')?.touched"-->
-<!--            />-->
-<!--            @if (productForm.get('title')?.invalid && productForm.get('title')?.touched) {-->
-<!--              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Title') }}</p>-->
-<!--            }-->
-<!--          </div>-->
+    @if (errorMessage()) {
+      <div class="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
+        <i class="icon-alert-circle text-destructive"></i>
+        <span class="text-destructive">{{ errorMessage() }}</span>
+      </div>
+    }
 
-<!--          &lt;!&ndash; Price &ndash;&gt;-->
-<!--          <div>-->
-<!--            <label class="block text-sm font-medium text-gray-700 mb-2">-->
-<!--              Price *-->
-<!--            </label>-->
-<!--            <input-->
-<!--              z-input-->
-<!--              type="number"-->
-<!--              formControlName="price"-->
-<!--              placeholder="0.00"-->
-<!--              step="0.01"-->
-<!--              min="0"-->
-<!--              class="w-full"-->
-<!--              [class.border-red-500]="productForm.get('price')?.invalid && productForm.get('price')?.touched"-->
-<!--            />-->
-<!--            @if (productForm.get('price')?.invalid && productForm.get('price')?.touched) {-->
-<!--              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Price') }}</p>-->
-<!--            }-->
-<!--          </div>-->
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-96">
+        <z-loader/>
+      </div>
+    } @else {
+      <!-- Form -->
+      <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="border rounded-lg p-6 space-y-6">
+          <!-- Product Name -->
+          <z-form-field>
+            <label z-form-label zRequired>Product Name</label>
+            <z-form-control>
+              <input
+                z-input
+                type="text"
+                formControlName="name"
+                placeholder="Enter product name"
+              />
+            </z-form-control>
+            @if (productForm.get('name')?.touched && productForm.get('name')?.invalid) {
+              <z-form-message zType="error">
+                @if (productForm.get('name')?.errors?.['required']) {
+                  Product name is required
+                }
+                @if (productForm.get('name')?.errors?.['minlength']) {
+                  Product name must be at least 3 characters
+                }
+              </z-form-message>
+            }
+          </z-form-field>
 
-<!--          &lt;!&ndash; Category &ndash;&gt;-->
-<!--          <div>-->
-<!--            <label class="block text-sm font-medium text-gray-700 mb-2">-->
-<!--              Category *-->
-<!--            </label>-->
-<!--            <select-->
-<!--              z-select-->
-<!--              formControlName="category"-->
-<!--              class="w-full"-->
-<!--              [class.border-red-500]="productForm.get('category')?.invalid && productForm.get('category')?.touched"-->
-<!--            >-->
-<!--              <option value="">Select a category</option>-->
-<!--              @for (cat of categories(); track cat) {-->
-<!--                <option [value]="cat">{{ cat }}</option>-->
-<!--              }-->
-<!--            </select>-->
-<!--            @if (productForm.get('category')?.invalid && productForm.get('category')?.touched) {-->
-<!--              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Category') }}</p>-->
-<!--            }-->
-<!--          </div>-->
+          <!-- Price and Stock -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Price -->
+            <z-form-field>
+              <label z-form-label zRequired>Price (USD)</label>
+              <z-form-control>
+                <input
+                  z-input
+                  type="number"
+                  formControlName="price"
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                />
+              </z-form-control>
+              @if (productForm.get('price')?.touched && productForm.get('price')?.invalid) {
+                <z-form-message zType="error">
+                  @if (productForm.get('price')?.errors?.['required']) {
+                    Price is required
+                  }
+                  @if (productForm.get('price')?.errors?.['min']) {
+                    Price must be greater than 0
+                  }
+                </z-form-message>
+              }
+            </z-form-field>
 
-<!--          &lt;!&ndash; Image URL &ndash;&gt;-->
-<!--          <div>-->
-<!--            <label class="block text-sm font-medium text-gray-700 mb-2">-->
-<!--              Image URL *-->
-<!--            </label>-->
-<!--            <input-->
-<!--              z-input-->
-<!--              type="url"-->
-<!--              formControlName="image"-->
-<!--              placeholder="https://example.com/image.jpg"-->
-<!--              class="w-full"-->
-<!--              [class.border-red-500]="productForm.get('image')?.invalid && productForm.get('image')?.touched"-->
-<!--            />-->
-<!--            @if (productForm.get('image')?.invalid && productForm.get('image')?.touched) {-->
-<!--              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Image') }}</p>-->
-<!--            }-->
-<!--            @if (productForm.get('image')?.value) {-->
-<!--              <div class="mt-3">-->
-<!--&lt;!&ndash;                <img&ndash;&gt;-->
-<!--&lt;!&ndash;                  [src]="productForm.get('image')?.value"&ndash;&gt;-->
-<!--&lt;!&ndash;                  alt="Preview"&ndash;&gt;-->
-<!--&lt;!&ndash;                  class="w-32 h-32 object-contain border rounded-lg"&ndash;&gt;-->
-<!--&lt;!&ndash;                  (error)="$event.target.src='https://via.placeholder.com/150'"&ndash;&gt;-->
-<!--&lt;!&ndash;                />&ndash;&gt;-->
-<!--              </div>-->
-<!--            }-->
-<!--          </div>-->
+            <!-- Stock -->
+            <z-form-field>
+              <label z-form-label zRequired>Stock Quantity</label>
+              <z-form-control>
+                <input
+                  z-input
+                  type="number"
+                  formControlName="stock"
+                  placeholder="0"
+                  min="0"
+                />
+              </z-form-control>
+              @if (productForm.get('stock')?.touched && productForm.get('stock')?.invalid) {
+                <z-form-message zType="error">
+                  @if (productForm.get('stock')?.errors?.['required']) {
+                    Stock quantity is required
+                  }
+                  @if (productForm.get('stock')?.errors?.['min']) {
+                    Stock must be 0 or greater
+                  }
+                </z-form-message>
+              }
+            </z-form-field>
+          </div>
 
-<!--          &lt;!&ndash; Description &ndash;&gt;-->
-<!--          <div>-->
-<!--            <label class="block text-sm font-medium text-gray-700 mb-2">-->
-<!--              Description *-->
-<!--            </label>-->
-<!--            <textarea-->
-<!--              z-textarea-->
-<!--              formControlName="description"-->
-<!--              placeholder="Enter product description"-->
-<!--              rows="5"-->
-<!--              class="w-full"-->
-<!--              [class.border-red-500]="productForm.get('description')?.invalid && productForm.get('description')?.touched"-->
-<!--            ></textarea>-->
-<!--            @if (productForm.get('description')?.invalid && productForm.get('description')?.touched) {-->
-<!--              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('Description') }}</p>-->
-<!--            }-->
-<!--          </div>-->
+          <!-- Description -->
+          <z-form-field>
+            <label z-form-label>Description</label>
+            <z-form-control>
+              <textarea
+                z-input
+                formControlName="description"
+                placeholder="Enter product description"
+                rows="4"
+                class="resize-none"
+              ></textarea>
+            </z-form-control>
+          </z-form-field>
 
-<!--          &lt;!&ndash; Actions &ndash;&gt;-->
-<!--          <div class="flex gap-4 pt-4">-->
-<!--            <button-->
-<!--              z-button-->
-<!--              zType="default"-->
-<!--              type="submit"-->
-<!--              [disabled]="isLoading()"-->
-<!--              class="flex-1">-->
-<!--              {{ isLoading() ? 'Saving...' : (isEditMode() ? 'Update Product' : 'Create Product') }}-->
-<!--            </button>-->
-<!--            <button-->
-<!--              z-button-->
-<!--              zType="default"-->
-<!--              type="button"-->
-<!--              (click)="cancel()"-->
-<!--              [disabled]="isLoading()"-->
-<!--              class="flex-1">-->
-<!--              Cancel-->
-<!--            </button>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </form>-->
-<!--    </z-card>-->
-<!--  </div>-->
-</app-layout>
+          <!-- Categories -->
+          <div class="space-y-3">
+            <label class="text-sm font-medium">Categories</label>
+            @if (categories().length > 0) {
+              <div class="flex flex-wrap gap-2">
+                @for (category of categories(); track category.id) {
+                  <button
+                    type="button"
+                    class="px-3 py-2 text-sm border rounded-lg transition-colors cursor-pointer"
+                    [class.bg-primary]="isCategorySelected(category.id)"
+                    [class.text-primary-foreground]="isCategorySelected(category.id)"
+                    [class.hover:bg-accent]="!isCategorySelected(category.id)"
+                    (click)="toggleCategory(category.id)"
+                  >
+                    {{ category.name }}
+                  </button>
+                }
+              </div>
+            } @else {
+              <p class="text-sm text-muted-foreground">No categories available</p>
+            }
+          </div>
+
+          <!-- Image Upload -->
+          <div class="space-y-3">
+            <label class="text-sm font-medium">Product Image</label>
+
+            <!-- Image Preview -->
+            @if (imagePreview()) {
+              <div class="relative w-full max-w-md aspect-square border rounded-lg overflow-hidden bg-muted">
+                <img
+                  [src]="imagePreview()!"
+                  alt="Product preview"
+                  class="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  class="absolute top-2 right-2 p-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
+                  (click)="imagePreview.set(null); selectedFile.set(null)"
+                >
+                  <i class="icon-x text-sm"></i>
+                </button>
+              </div>
+            }
+
+            <!-- File Input -->
+            <div class="flex items-center gap-3">
+              <input
+                type="file"
+                #fileInput
+                class="hidden"
+                accept="image/*"
+                (change)="onFileSelected($event)"
+              />
+              <button
+                type="button"
+                class="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-accent transition-colors"
+                (click)="fileInput.click()"
+              >
+                <i class="icon-upload"></i>
+                {{ imagePreview() ? 'Change Image' : 'Upload Image' }}
+              </button>
+              <span class="text-sm text-muted-foreground">
+                Max size: 5MB. Formats: JPG, PNG, GIF
+              </span>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end gap-3 pt-6">
+              <button
+                type="button"
+                class="px-6 py-2 border rounded-lg hover:bg-accent transition-colors"
+                (click)="cancel()"
+                [disabled]="isSaving()"
+              >
+                Cancel
+              </button>
+              <button
+                z-button
+                zType="default"
+                type="submit"
+                [disabled]="productForm.invalid || isSaving()"
+                class="px-6 py-2"
+              >
+                @if (isSaving()) {
+                  <span class="flex items-center gap-2">
+                <span class="animate-spin">⏳</span>
+                    {{ isEditMode() ? 'Updating...' : 'Creating...' }}
+              </span>
+                } @else {
+                  <span>{{ isEditMode() ? 'Update Product' : 'Create Product' }}</span>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+
+
+      </form>
+    }
+  </div>
+</app-admin-layout>
+

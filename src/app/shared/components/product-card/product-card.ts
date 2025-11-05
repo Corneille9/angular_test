@@ -3,6 +3,8 @@ import {ZardButtonComponent} from "@shared/components/button/button.component";
 import {ZardCardComponent} from "@shared/components/card/card.component";
 import {Product} from '../../../types';
 import {CartService} from '../../../services/cart/cart.service';
+import {SERVER_URL} from '../../../config/api';
+import {getImageUrl} from '@shared/utils/utils';
 
 @Component({
   selector: 'app-product-card',
@@ -22,4 +24,6 @@ export class ProductCard {
     console.log(`${this.product.name} added to cart`);
     this.onAddToCart.emit(this.product);
   }
+
+  protected readonly getImageUrl = getImageUrl;
 }

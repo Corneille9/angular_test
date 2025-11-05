@@ -51,7 +51,9 @@
                 </div>
               }
 
-              <button z-button zType="default" type="submit" [disabled]="isLoading()" class="cursor-pointer">Login</button>
+              <button z-button zType="default" type="submit" [disabled]="isLoading()" class="cursor-pointer mt-5">Login</button>
+
+              <button z-button zType="link" [disabled]="isLoading()" routerLink="/auth/login" class="cursor-pointer text-xs">Login</button>
             </form>
           </fieldset>
         </div>

@@ -1,7 +1,7 @@
 import {inject, Injectable, signal} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {ApiResponse, ApiResponseWithMessage, CreateUserRequest, DashboardStatistics, Order, OrderStatistics, PaginatedResponse, Payment, PaymentStatistics, StorePaymentRequest, UpdateOrderRequest, UpdateUserRequest, User} from '../../types';
+import {ApiResponse, ApiResponseWithMessage, CreateUserRequest, DashboardStatistics, Order, OrderStatistics, PaginatedResponse, Payment, PaymentStatistics, SalesChartData, StorePaymentRequest, UpdateOrderRequest, UpdateUserRequest, User} from '../../types';
 import {API_BASE_URL} from '../../config/api';
 
 @Injectable({
@@ -17,7 +17,7 @@ export class AdminService {
     return this.http.get<DashboardStatistics>(`${API_BASE_URL}/admin/dashboard`);
   }
 
-  getSalesChartData(period: string = 'week'): Observable<any> {
+  getSalesChartData(period: string = 'week'): Observable<SalesChartData> {
     const params = new HttpParams().set('period', period);
     return this.http.get<any>(`${API_BASE_URL}/admin/dashboard/sales-chart`, {params});
   }

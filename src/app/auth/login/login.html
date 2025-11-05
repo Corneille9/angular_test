@@ -23,9 +23,13 @@
                 }
               </z-form-field>
               <z-form-field>
-                <label z-form-label zRequired for="password">Password</label>
+                <div class="flex justify-between items-center">
+                  <label z-form-label zRequired for="password">Password</label>
+
+                  <button z-button zType="link" type="button" [disabled]="isLoading()" routerLink="/auth/forgot-password" class="cursor-pointer text-xs">Forgot password?</button>
+                </div>
                 <z-form-control>
-                  <input z-input type="text" id="password" formControlName="password" required name="password" placeholder="Enter your last title">
+                  <input z-input type="password" id="password" formControlName="password" required name="password" placeholder="Enter your last title">
                 </z-form-control>
                 @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
                   <z-form-message zType="error">
@@ -40,7 +44,9 @@
                 </div>
               }
 
-              <button z-button zType="default" type="submit" [disabled]="isLoading()" class="cursor-pointer">Login</button>
+              <button z-button zType="default" type="submit" [disabled]="isLoading()" class="cursor-pointer mt-5">Login</button>
+
+              <button z-button zType="link" [disabled]="isLoading()" routerLink="/auth/register" class="cursor-pointer text-xs">Register</button>
             </form>
           </fieldset>
 

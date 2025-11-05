@@ -5,7 +5,7 @@
         <div class="flex items-center bg-background shadow rounded-xl p-3 gap-3">
           <!-- Image produit -->
           <img
-            [src]="item.product.image"
+            [src]="getImageUrl(item.product.image)"
             [alt]="item.product.name"
             class="w-16 h-16 object-cover rounded-lg bg-muted flex-shrink-0"
           />

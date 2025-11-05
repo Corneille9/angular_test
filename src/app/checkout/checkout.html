@@ -1,14 +1,14 @@
 <app-layout>
   <div layoutMain class="p-6 max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
     <div class="md:col-span-2">
-      <h2 class="text-2xl font-semibold mb-4">Votre commande</h2>
+      <h2 class="text-2xl font-semibold mb-4">Your Order</h2>
 
       @if (cartItems().length > 0) {
-        <div class="flex flex-col space-y-5">
-          @for (item of cartItems(); track item) {
-            <div class="flex items-center bg-background shadow rounded-xl gap-4 py-4">
+        <div class="flex flex-col space-y-4">
+          @for (item of cartItems(); track item.id) {
+            <div class="flex items-center bg-background shadow rounded-xl gap-4 p-4">
               <img
-                [src]="item.product.image"
+                [src]="getImageUrl(item.product.image)"
                 class="w-16 h-16 object-cover rounded-lg bg-muted"
                 alt="{{ item.product.name }}"
               />
@@ -21,58 +21,86 @@
               </div>
 
               <div class="font-semibold">
-                ${{ (item.product.price * item.quantity).toFixed(2) }}
+                ${{ item.subtotal.toFixed(2) }}
               </div>
             </div>
           }
         </div>
 
         <div class="flex justify-between items-center border-t pt-4 mt-4">
-          <span class="text-lg font-medium">Total :</span>
+          <span class="text-lg font-medium">Total:</span>
           <span class="text-xl font-bold text-primary">${{ total().toFixed(2) }}</span>
         </div>
       } @else {
-        <p class="text-gray-500">Votre panier est vide.</p>
+        <div class="text-center py-8">
+          <i class="icon-shopping-cart text-4xl text-muted-foreground mb-2"></i>
+          <p class="text-muted-foreground">Your cart is empty.</p>
+        </div>
       }
     </div>
 
-    <!-- 💳 Section Paiement / Livraison -->
+    <!-- Payment Information Section -->
     <div class="bg-background shadow rounded-2xl p-6 h-fit space-y-6">
-      <h3 class="text-xl font-semibold mb-4">Informations de paiement</h3>
+      <h3 class="text-xl font-semibold mb-4">Payment Information</h3>
 
-      <form class="space-y-4">
-        <!-- Adresse -->
+      <div class="bg-muted/50 rounded-lg p-4 mb-4">
+        <div class="flex items-start gap-2">
+          <i class="icon-info text-primary mt-1"></i>
+          <div class="text-sm text-muted-foreground">
+            You will be redirected to Stripe to complete your payment securely.
+          </div>
+        </div>
+      </div>
+
+      <form class="space-y-4" (submit)="$event.preventDefault(); confirmOrder()">
+        <!-- Notes -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium">Adresse de livraison</label>
-          <input
-            type="text"
-            placeholder="123 Rue de Cayenne"
-            class="w-full border border-muted rounded-lg p-2 bg-background focus:ring-2 focus:ring-primary"
-          />
+          <label class="block text-sm font-medium">Order Notes (Optional)</label>
+          <textarea
+            z-input
+            [(ngModel)]="notes"
+            name="notes"
+            placeholder="Add any special instructions for your order..."
+            rows="3"
+            class="w-full"
+            maxlength="500"
+          ></textarea>
+          <p class="text-xs text-muted-foreground">
+            {{ notes.length }}/500 characters
+          </p>
         </div>
 
-        <!-- Méthode de paiement -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium">Méthode de paiement</label>
-          <select
-            class="w-full border border-muted rounded-lg p-2 bg-background focus:ring-2 focus:ring-primary"
-          >
-            <option>Carte bancaire</option>
-            <option>Mobile Money</option>
-            <option>PayPal</option>
-          </select>
+        <!-- Order Summary -->
+        <div class="border-t pt-4 space-y-2">
+          <div class="flex justify-between text-sm">
+            <span class="text-muted-foreground">Subtotal</span>
+            <span class="font-medium">${{ total().toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-muted-foreground">Shipping</span>
+            <span class="font-medium">Calculated at checkout</span>
+          </div>
+          <div class="flex justify-between text-base font-semibold border-t pt-2">
+            <span>Total</span>
+            <span class="text-primary">${{ total().toFixed(2) }}</span>
+          </div>
         </div>
 
-        <!-- Bouton -->
+        <!-- Submit Button -->
         <div class="pt-4">
           <button
             z-button
             zType="default"
             class="w-full cursor-pointer"
-            (click)="confirmOrder()"
-            type="button"
+            type="submit"
+            [disabled]="isProcessing() || cartItems().length === 0"
+            [zLoading]="isProcessing()"
           >
-            Confirmer la commande
+            @if (isProcessing()) {
+              Processing...
+            } @else {
+              Proceed to Payment
+            }
           </button>
         </div>
       </form>
